@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug RWA Interface</title>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .debug { background: #f5f5f5; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #ffebee; color: #c62828; }
+        .success { background: #e8f5e8; color: #2e7d32; }
+        .info { background: #e3f2fd; color: #1565c0; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-primary { background: #2196f3; color: white; }
+        .btn-success { background: #4caf50; color: white; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ccc; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🛠️ Debug Interface RWA Token</h1>
+    
+    <div class="debug">
+        <h3>📋 Diagnostic</h3>
+        <div id="diagnostics"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>🔌 Connexion</h3>
+        <button id="connectBtn" class="btn-primary">Connecter MetaMask</button>
+        <div id="connectionStatus"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>📊 Test Contract</h3>
+        <button id="testReadBtn" class="btn-success">Tester lecture contrat</button>
+        <div id="contractResults"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>💰 Balance et Infos</h3>
+        <button id="getBalanceBtn" class="btn-success">Obtenir balance</button>
+        <button id="getInfoBtn" class="btn-success">Obtenir infos token</button>
+        <div id="balanceResults"></div>
+    </div>
+    
+    <div class="debug">
+        <h3>🔧 Test Transaction</h3>
+        <input type="text" id="testAddress" placeholder="Adresse test" style="width: 300px;">
+        <button id="testQualifyBtn" class="btn-success">Test Qualify Investor</button>
+        <div id="transactionResults"></div>
+    </div>
+    
+    <script>
+        const CONTRACT_ADDRESS = "0x4f8149CfC88d277c6e740Cb3Bb2CFed03281D619";
+        const CONTRACT_ABI = [
+            "function name() view returns (string)",
+            "function symbol() view returns (string)", 
+            "function totalSupply() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function getTokenValue() view returns (uint256)",
+            "function getPropertyMetadata() view returns (tuple(string propertyAddress, string propertyType, uint256 totalValue, uint256 tokenizedPercentage, string legalDocumentHash, string valuationReportHash, bool isVerified, uint256 lastValuationDate))",
+            "function qualifiedInvestors(address) view returns (bool)",
+            "function owner() view returns (address)",
+            "function qualifyInvestor(address investor)"
+        ];
+        
+        let provider = null;
+        let signer = null;
+        let contract = null;
+        let userAddress = null;
+        
+        function log(message, type = 'info') {
+            const container = document.getElementById('diagnostics');
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            console.log(message);
+        }
+        
+        // Diagnostic initial
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Page chargée', 'success');
+            
+            // Test ethers
+            if (typeof ethers !== 'undefined') {
+                log('✅ Ethers.js chargé - Version: ' + ethers.version, 'success');
+            } else {
+                log('❌ Ethers.js non chargé', 'error');
+                return;
+            }
+            
+            // Test MetaMask
+            if (typeof window.ethereum !== 'undefined') {
+                log('✅ MetaMask détecté', 'success');
+                log('Provider: ' + window.ethereum.constructor.name, 'info');
+            } else {
+                log('❌ MetaMask non détecté', 'error');
+            }
+            
+            // Test réseau
+            if (window.ethereum) {
+                window.ethereum.request({ method: 'eth_chainId' })
+                    .then(chainId => {
+                        log('🌐 Chain ID actuel: ' + chainId, 'info');
+                        if (chainId === '0xaa36a7') {
+                            log('✅ Sur Sepolia', 'success');
+                        } else {
+                            log('⚠️ Pas sur Sepolia (0xaa36a7)', 'error');
+                        }
+                    })
+                    .catch(err => log('❌ Erreur chain ID: ' + err.message, 'error'));
+            }
+        });
+        
+        // Connexion
+        document.getElementById('connectBtn').addEventListener('click', async function() {
+            try {
+                log('🔌 Tentative de connexion...', 'info');
+                
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                
+                log('✅ Connecté: ' + userAddress, 'success');
+                
+                contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+                log('✅ Contrat initialisé', 'success');
+                
+                const status = document.getElementById('connectionStatus');
+                status.innerHTML = `
+                    <div class="success">
+                        ✅ Connecté!<br>
+                        Adresse: ${userAddress}<br>
+                        Contrat: ${CONTRACT_ADDRESS}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log('❌ Erreur connexion: ' + error.message, 'error');
+            }
+        });
+        
+        // Test lecture contrat
+        document.getElementById('testReadBtn').addEventListener('click', async function() {
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+            
+            const results = document.getElementById('contractResults');
+            results.innerHTML = '';
+            
+            try {
+                log('📖 Test lecture contrat...', 'info');
+                
+                // Test nom
+                const name = await contract.name();
+                log('✅ Nom: ' + name, 'success');
+                
+                // Test symbole
+                const symbol = await contract.symbol();
+                log('✅ Symbole: ' + symbol, 'success');
+                
+                // Test supply
+                const totalSupply = await contract.totalSupply();
+                log('✅ Total Supply: ' + ethers.utils.formatEther(totalSupply), 'success');
+                
+                // Test métadonnées
+                const metadata = await contract.getPropertyMetadata();
+                log('✅ Propriété: ' + metadata.propertyAddress, 'success');
+                log('✅ Type: ' + metadata.propertyType, 'success');
+                log('✅ Valeur: ' + ethers.utils.formatEther(metadata.totalValue) + ' EUR', 'success');
+                
+                results.innerHTML = `
+                    <div class="success">
+                        ✅ Lecture contrat réussie!<br>
+                        Nom: ${name}<br>
+                        Symbole: ${symbol}<br>
+                        Supply: ${ethers.utils.formatEther(totalSupply)}<br>
+                        Propriété: ${metadata.propertyAddress}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log('❌ Erreur lecture: ' + error.message, 'error');
+                results.innerHTML = `<div class="error">❌ Erreur: ${error.message}</div>`;
+            }
+        });
+        
+        // Test balance
+        document.getElementById('getBalanceBtn').addEventListener('click', async function() {
+            if (!contract || !userAddress) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+            
+            try {
+                const balance = await contract.balanceOf(userAddress);
+                const ethBalance = await provider.getBalance(userAddress);
+                
+                const results = document.getElementById('balanceResults');
+                results.innerHTML = `
+                    <div class="success">
+                        💰 Balance tokens: ${ethers.utils.formatEther(balance)}<br>
+                        💰 Balance ETH: ${ethers.utils.formatEther(ethBalance)}
+                    </div>
+                `;
+                
+                log('✅ Balance obtenue', 'success');
+                
+            } catch (error) {
+                log('❌ Erreur balance: ' + error.message, 'error');
+            }
+        });
+        
+        // Test infos
+        document.getElementById('getInfoBtn').addEventListener('click', async function() {
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+            
+            try {
+                const tokenValue = await contract.getTokenValue();
+                const isQualified = await contract.qualifiedInvestors(userAddress);
+                const owner = await contract.owner();
+                
+                const results = document.getElementById('balanceResults');
+                results.innerHTML += `
+                    <div class="info">
+                        💎 Valeur/token: ${ethers.utils.formatEther(tokenValue)} EUR<br>
+                        👤 KYC qualifié: ${isQualified ? '✅ Oui' : '❌ Non'}<br>
+                        👑 Owner: ${owner}<br>
+                        🏠 Vous êtes owner: ${owner.toLowerCase() === userAddress.toLowerCase() ? '✅ Oui' : '❌ Non'}
+                    </div>
+                `;
+                
+                log('✅ Infos obtenues', 'success');
+                
+            } catch (error) {
+                log('❌ Erreur infos: ' + error.message, 'error');
+            }
+        });
+        
+        // Test transaction
+        document.getElementById('testQualifyBtn').addEventListener('click', async function() {
+            const testAddress = document.getElementById('testAddress').value;
+            
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+            
+            if (!testAddress || !ethers.utils.isAddress(testAddress)) {
+                log('❌ Adresse invalide', 'error');
+                return;
+            }
+            
+            try {
+                log('📝 Test transaction qualify...', 'info');
+                
+                const tx = await contract.qualifyInvestor(testAddress);
+                log('⏳ Transaction envoyée: ' + tx.hash, 'info');
+                
+                const receipt = await tx.wait();
+                log('✅ Transaction confirmée!', 'success');
+                
+                const results = document.getElementById('transactionResults');
+                results.innerHTML = `
+                    <div class="success">
+                        ✅ Transaction réussie!<br>
+                        Hash: ${tx.hash}<br>
+                        Block: ${receipt.blockNumber}
+                    </div>
+                `;
+                
+            } catch (error) {
+                log('❌ Erreur transaction: ' + error.message, 'error');
+                
+                const results = document.getElementById('transactionResults');
+                results.innerHTML = `<div class="error">❌ ${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

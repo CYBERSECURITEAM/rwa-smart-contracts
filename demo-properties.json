@@ -1,0 +1,49 @@
+{
+  "disclaimer": "TOUTES LES PROPRIÉTÉS LISTÉES CI-DESSOUS SONT FICTIVES ET À DES FINS DE DÉMONSTRATION UNIQUEMENT",
+  "properties": [
+    {
+      "name": "DemoVille Office Tower",
+      "address": "456 Rue de la Tokenisation, 75000 DemoVille, France [FICTIF]",
+      "type": "Bureau Commercial - Propriété de Démonstration",
+      "totalValue": "5000000",
+      "currency": "EUR",
+      "tokenizedPercentage": 80,
+      "totalSupply": "4000000",
+      "tokenSymbol": "DVOT",
+      "description": "Immeuble de bureaux fictif utilisé pour démontrer la tokenisation RWA"
+    },
+    {
+      "name": "Virtual Residence Plaza",
+      "address": "789 Boulevard de la Blockchain, 69000 TestCity, France [FICTIF]",
+      "type": "Résidentiel - Appartements de Démonstration",
+      "totalValue": "2500000",
+      "currency": "EUR",
+      "tokenizedPercentage": 75,
+      "totalSupply": "2000000",
+      "tokenSymbol": "VRPT",
+      "description": "Complex résidentiel fictif pour tests de tokenisation"
+    },
+    {
+      "name": "Crypto Commerce Center",
+      "address": "321 Allée des Contrats Intelligents, 33000 Web3Ville, France [FICTIF]",
+      "type": "Commercial - Centre Commercial de Test",
+      "totalValue": "8000000",
+      "currency": "EUR",
+      "tokenizedPercentage": 90,
+      "totalSupply": "6000000",
+      "tokenSymbol": "CCCT",
+      "description": "Centre commercial virtuel pour démonstration de RWA"
+    }
+  ],
+  "legal_notice": {
+    "en": "These properties are entirely fictional and created for educational and demonstration purposes only. No real estate assets are associated with these smart contracts.",
+    "fr": "Ces propriétés sont entièrement fictives et créées à des fins éducatives et de démonstration uniquement. Aucun actif immobilier réel n'est associé à ces contrats intelligents."
+  },
+  "recommendations": [
+    "Always use fictional addresses in demo/test environments",
+    "Include [FICTIF] or [DEMO] markers in property descriptions",
+    "Add clear disclaimers in user interfaces",
+    "Use obviously fake city names like 'DemoVille' or 'TestCity'",
+    "Never reference real properties without proper legal authorization"
+  ]
+}

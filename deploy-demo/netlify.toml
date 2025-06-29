@@ -1,0 +1,20 @@
+[build]
+  publish = "."
+  
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Content-Security-Policy = "default-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://sepolia.etherscan.io; connect-src 'self' https://*.infura.io https://*.alchemy.com https://sepolia.etherscan.io wss://*.infura.io;"
+
+[[redirects]]
+  from = "/dashboard"
+  to = "/investor-dashboard.html"
+  status = 301
+
+[[redirects]]
+  from = "/simple"
+  to = "/simple.html"
+  status = 301

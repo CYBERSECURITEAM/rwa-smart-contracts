@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RWA Investor Dashboard - Plateforme d'Investissement</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+            position: fixed;
+            width: 100%;
+        }
+
+        .dashboard {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            font-weight: 700;
+        }
+
+        .wallet-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .connect-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .connect-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .kpi-card.portfolio { border-left-color: #e74c3c; }
+        .kpi-card.performance { border-left-color: #27ae60; }
+        .kpi-card.tokens { border-left-color: #3498db; }
+        .kpi-card.value { border-left-color: #f39c12; }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .kpi-title {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .kpi-icon {
+            font-size: 1.5em;
+            opacity: 0.7;
+        }
+
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .kpi-change {
+            font-size: 0.85em;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .kpi-change.positive { color: #27ae60; }
+        .kpi-change.negative { color: #e74c3c; }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .property-details {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .property-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3em;
+        }
+
+        .property-info {
+            space-y: 10px;
+        }
+
+        .property-info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .property-info-item:last-child {
+            border-bottom: none;
+        }
+
+        .property-info-label {
+            color: #7f8c8d;
+            font-weight: 600;
+        }
+
+        .property-info-value {
+            color: #2c3e50;
+            font-weight: 700;
+        }
+
+        .transactions-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            color: #2c3e50;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            transition: background 0.3s ease;
+        }
+
+        .transaction-item:hover {
+            background: #e9ecef;
+        }
+
+        .transaction-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .transaction-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .transaction-icon.buy { background: #27ae60; }
+        .transaction-icon.sell { background: #e74c3c; }
+        .transaction-icon.transfer { background: #3498db; }
+
+        .transaction-details {
+            flex: 1;
+        }
+
+        .transaction-type {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .transaction-date {
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+
+        .transaction-amount {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .actions-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .action-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .alerts {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            max-width: 400px;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            color: white;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .alert.success { background: #27ae60; }
+        .alert.error { background: #e74c3c; }
+        .alert.info { background: #3498db; }
+        .alert.warning { background: #f39c12; }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .hidden { display: none; }
+
+        .performance-overview {
+            padding: 10px 0;
+        }
+
+        .perf-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .perf-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .perf-label {
+            font-size: 0.9em;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .perf-value {
+            font-size: 1.5em;
+            font-weight: 700;
+        }
+
+        .perf-value.initial { color: #3498db; }
+        .perf-value.current { color: #2c3e50; }
+        .perf-value.gain { color: #27ae60; }
+
+        .progress-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .roi-value {
+            color: #27ae60;
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #ecf0f1;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            border-radius: 6px;
+            transition: width 0.6s ease;
+            width: 0%;
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+
+        .timeline-section h4 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline:before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #ecf0f1;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -23px;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-dot.positive { background: #27ae60; }
+        .timeline-dot.negative { background: #e74c3c; }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-date {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+        }
+
+        .timeline-desc {
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        .timeline-value {
+            font-weight: 700;
+            color: #27ae60;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .perf-metrics {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .timeline-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+
+            .timeline-value {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <header class="header">
+            <div>
+                <h1><i class="fas fa-building"></i> RWA Investor Dashboard</h1>
+                <p style="color: #7f8c8d; margin-top: 5px;">Plateforme d'investissement immobilier tokenisé</p>
+            </div>
+            <div class="wallet-status">
+                <div id="walletInfo" class="hidden">
+                    <div style="text-align: right;">
+                        <div style="font-size: 0.9em; color: #7f8c8d;">Portefeuille connecté</div>
+                        <div id="walletAddress" style="font-weight: 600; color: #2c3e50;"></div>
+                    </div>
+                </div>
+                <button id="connectBtn" class="connect-btn">
+                    <i class="fas fa-wallet"></i> Connecter MetaMask
+                </button>
+            </div>
+        </header>
+
+        <div class="kpi-grid">
+            <div class="kpi-card portfolio">
+                <div class="kpi-header">
+                    <span class="kpi-title">Valeur Portefeuille</span>
+                    <i class="fas fa-chart-pie kpi-icon"></i>
+                </div>
+                <div class="kpi-value" id="portfolioValue">€0</div>
+                <div class="kpi-change positive" id="portfolioChange">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+0.00%</span>
+                </div>
+            </div>
+
+            <div class="kpi-card performance">
+                <div class="kpi-header">
+                    <span class="kpi-title">Performance</span>
+                    <i class="fas fa-chart-line kpi-icon"></i>
+                </div>
+                <div class="kpi-value" id="performanceValue">+0.00%</div>
+                <div class="kpi-change positive" id="performanceChange">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>Depuis l'investissement</span>
+                </div>
+            </div>
+
+            <div class="kpi-card tokens">
+                <div class="kpi-header">
+                    <span class="kpi-title">Mes Tokens</span>
+                    <i class="fas fa-coins kpi-icon"></i>
+                </div>
+                <div class="kpi-value" id="tokensOwned">0</div>
+                <div class="kpi-change" id="tokensChange">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="tokensPercent">0% de la propriété</span>
+                </div>
+            </div>
+
+            <div class="kpi-card value">
+                <div class="kpi-header">
+                    <span class="kpi-title">Valeur/Token</span>
+                    <i class="fas fa-euro-sign kpi-icon"></i>
+                </div>
+                <div class="kpi-value" id="tokenValue">€0</div>
+                <div class="kpi-change" id="tokenValueChange">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Prix actuel</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="chart-container">
+                <h3 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Performance de mon investissement
+                </h3>
+                <div class="performance-overview">
+                    <div class="perf-metrics">
+                        <div class="perf-item">
+                            <div class="perf-label">Investissement initial</div>
+                            <div class="perf-value initial" id="initialInvestment">€0</div>
+                        </div>
+                        <div class="perf-item">
+                            <div class="perf-label">Valeur actuelle</div>
+                            <div class="perf-value current" id="currentValue">€0</div>
+                        </div>
+                        <div class="perf-item">
+                            <div class="perf-label">Plus-value</div>
+                            <div class="perf-value gain" id="totalGain">€0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span>ROI</span>
+                            <span id="roiPercentage" class="roi-value">+0.00%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-labels">
+                            <span>0%</span>
+                            <span>+10%</span>
+                            <span>+20%</span>
+                        </div>
+                    </div>
+
+                    <div class="timeline-section">
+                        <h4>Historique des performances</h4>
+                        <div class="timeline">
+                            <div class="timeline-item">
+                                <div class="timeline-dot positive"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">Investissement initial</div>
+                                    <div class="timeline-desc">Achat des premiers tokens</div>
+                                </div>
+                                <div class="timeline-value">€10,000</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot positive"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">+15 jours</div>
+                                    <div class="timeline-desc">Réévaluation propriété</div>
+                                </div>
+                                <div class="timeline-value">+3.2%</div>
+                            </div>
+                            <div class="timeline-item">
+                                <div class="timeline-dot positive"></div>
+                                <div class="timeline-content">
+                                    <div class="timeline-date">Aujourd'hui</div>
+                                    <div class="timeline-desc">Valeur actuelle</div>
+                                </div>
+                                <div class="timeline-value" id="timelineCurrentValue">€10,500</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="property-details">
+                <h3 class="section-title">
+                    <i class="fas fa-home"></i>
+                    Propriété Tokenisée
+                </h3>
+                <div class="property-image">
+                    <i class="fas fa-building"></i>
+                </div>
+                <div class="property-info">
+                    <div class="property-info-item">
+                        <span class="property-info-label">Adresse</span>
+                        <span class="property-info-value" id="propertyAddress">-</span>
+                    </div>
+                    <div class="property-info-item">
+                        <span class="property-info-label">Type</span>
+                        <span class="property-info-value" id="propertyType">-</span>
+                    </div>
+                    <div class="property-info-item">
+                        <span class="property-info-label">Valeur totale</span>
+                        <span class="property-info-value" id="propertyValue">€0</span>
+                    </div>
+                    <div class="property-info-item">
+                        <span class="property-info-label">% Tokenisé</span>
+                        <span class="property-info-value" id="propertyPercent">0%</span>
+                    </div>
+                    <div class="property-info-item">
+                        <span class="property-info-label">Statut</span>
+                        <span class="property-info-value" id="propertyStatus">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="transactions-section">
+            <h3 class="section-title">
+                <i class="fas fa-history"></i>
+                Activité récente
+                <button id="refreshBtn" style="margin-left: auto; background: none; border: none; color: #667eea; cursor: pointer;">
+                    <i class="fas fa-sync"></i>
+                </button>
+            </h3>
+            <div id="transactionsList">
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon buy">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-type">Connexion initiale</div>
+                            <div class="transaction-date">Connectez votre wallet pour voir l'activité</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-panel">
+            <div class="action-card">
+                <h3 class="section-title">
+                    <i class="fas fa-exchange-alt"></i>
+                    Transférer des tokens
+                </h3>
+                <div class="form-group">
+                    <label class="form-label">Adresse destinataire</label>
+                    <input type="text" class="form-input" id="transferTo" placeholder="0x...">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Montant</label>
+                    <input type="number" class="form-input" id="transferAmount" placeholder="Nombre de tokens" step="0.01">
+                </div>
+                <button class="action-btn" id="transferBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Transférer
+                </button>
+            </div>
+
+            <div class="action-card">
+                <h3 class="section-title">
+                    <i class="fas fa-user-check"></i>
+                    Gestion KYC
+                </h3>
+                <div class="form-group">
+                    <label class="form-label">Mon statut KYC</label>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <div id="kycStatus" style="font-weight: 600; font-size: 1.1em;">
+                            <i class="fas fa-spinner fa-spin"></i> Vérification...
+                        </div>
+                    </div>
+                </div>
+                <button class="action-btn" id="checkKycBtn">
+                    <i class="fas fa-search"></i>
+                    Vérifier mon KYC
+                </button>
+            </div>
+
+            <div class="action-card">
+                <h3 class="section-title">
+                    <i class="fas fa-euro-sign"></i>
+                    Valeur du Token
+                </h3>
+                <div class="form-group">
+                    <label class="form-label">Valeur actuelle du token</label>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                        <div id="currentTokenValue" style="font-weight: 600; font-size: 1.1em; color: #2c3e50;">
+                            €0.00
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Formule de calcul</label>
+                    <div style="padding: 15px; background: #e8f4fd; border-radius: 8px; margin-bottom: 15px;">
+                        <div style="font-family: monospace; text-align: center; color: #2c3e50; font-weight: 600;">
+                            Valeur/Token = (Valeur propriété × % tokenisé) ÷ Supply total
+                        </div>
+                    </div>
+                    <div id="calculationExample" style="font-size: 0.9em; color: #7f8c8d; margin-bottom: 15px; display: none;">
+                        <strong>Exemple :</strong><br>
+                        Propriété €2,000,000 × 50% ÷ 4,000,000 tokens = €0.25/token
+                    </div>
+                </div>
+                <div class="form-group">
+                    <button class="action-btn" id="calculateValueBtn" style="background: #f39c12;">
+                        <i class="fas fa-calculator"></i>
+                        Calculer valeur par token
+                    </button>
+                </div>
+                <div class="form-group">
+                    <button class="action-btn" id="debugContractBtn" style="background: #9b59b6;">
+                        <i class="fas fa-bug"></i>
+                        Diagnostiquer contrat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="alerts" id="alerts"></div>
+
+    <script>
+        // Configuration et variables globales
+        const CONTRACT_ADDRESS = "0x4f8149CfC88d277c6e740Cb3Bb2CFed03281D619";
+        const ABI = [
+            "function name() view returns (string)",
+            "function symbol() view returns (string)", 
+            "function totalSupply() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function getTokenValue() view returns (uint256)",
+            "function getPropertyMetadata() view returns (tuple(string propertyAddress, string propertyType, uint256 totalValue, uint256 tokenizedPercentage, string legalDocumentHash, string valuationReportHash, bool isVerified, uint256 lastValuationDate))",
+            "function qualifiedInvestors(address) view returns (bool)",
+            "function qualifyInvestor(address investor)",
+            "function transfer(address to, uint256 amount) returns (bool)"
+        ];
+
+        let provider, signer, contract, userAddress;
+        let portfolioData = {
+            currentValue: 0,
+            initialValue: 10000, // Valeur d'exemple
+            performance: 0,
+            tokens: 0,
+            tokenValue: 0
+        };
+
+        // Initialisation
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEthers();
+            setupEventListeners();
+        });
+
+        async function initializeEthers() {
+            try {
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+                script.onload = () => {
+                    showAlert('✅ Interface chargée avec succès!', 'success');
+                };
+                script.onerror = () => {
+                    showAlert('❌ Erreur de chargement. Vérifiez votre connexion internet.', 'error');
+                };
+                document.head.appendChild(script);
+            } catch (error) {
+                showAlert('❌ Erreur d\'initialisation: ' + error.message, 'error');
+            }
+        }
+
+        function setupEventListeners() {
+            document.getElementById('connectBtn').addEventListener('click', connectWallet);
+            document.getElementById('transferBtn').addEventListener('click', transferTokens);
+            document.getElementById('checkKycBtn').addEventListener('click', checkKyc);
+            document.getElementById('refreshBtn').addEventListener('click', refreshData);
+            document.getElementById('calculateValueBtn').addEventListener('click', calculateTokenValue);
+            document.getElementById('debugContractBtn').addEventListener('click', debugContract);
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    throw new Error('MetaMask non détecté. Veuillez installer MetaMask.');
+                }
+
+                showAlert('🔄 Connexion en cours...', 'info');
+                
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                // Vérifier le réseau
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== '0xaa36a7') {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xaa36a7' }],
+                        });
+                    } catch (switchError) {
+                        throw new Error('Veuillez passer sur le réseau Sepolia');
+                    }
+                }
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+                // Mettre à jour l'interface
+                document.getElementById('connectBtn').innerHTML = '<i class="fas fa-check"></i> Connecté';
+                document.getElementById('connectBtn').style.background = '#27ae60';
+                document.getElementById('walletAddress').textContent = `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}`;
+                document.getElementById('walletInfo').classList.remove('hidden');
+
+                showAlert('✅ Wallet connecté avec succès!', 'success');
+                
+                // Charger automatiquement les données
+                await loadAllData();
+
+            } catch (error) {
+                showAlert('❌ Erreur connexion: ' + error.message, 'error');
+            }
+        }
+
+        async function loadAllData() {
+            if (!contract) {
+                showAlert('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            // Éviter les chargements multiples simultanés
+            if (isRefreshing) return;
+            isRefreshing = true;
+
+            try {
+                // Afficher le message de chargement seulement lors de la première connexion
+                if (!portfolioData.currentValue) {
+                    showAlert('📊 Chargement des données...', 'info');
+                }
+
+                // Charger les données en parallèle
+                const [
+                    name, symbol, totalSupply, tokenValue, balance, property, isQualified
+                ] = await Promise.all([
+                    contract.name(),
+                    contract.symbol(),
+                    contract.totalSupply(),
+                    contract.getTokenValue(),
+                    contract.balanceOf(userAddress),
+                    contract.getPropertyMetadata(),
+                    contract.qualifiedInvestors(userAddress)
+                ]);
+
+                // Calculer les valeurs
+                let tokenValueEth = parseFloat(ethers.utils.formatEther(tokenValue));
+                const balanceNum = parseFloat(ethers.utils.formatEther(balance));
+                const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                
+                // DEBUG: Afficher toutes les données reçues du contrat
+                console.log('🔍 DONNÉES DU CONTRAT:');
+                console.log('- tokenValue brut:', tokenValue.toString());
+                console.log('- tokenValue formaté:', tokenValueEth, 'EUR');
+                console.log('- balance:', balance.toString(), '→', balanceNum);
+                console.log('- totalSupply:', totalSupply.toString(), '→', totalSupplyNum);
+                console.log('- property.totalValue:', property.totalValue.toString());
+                console.log('- property.tokenizedPercentage:', property.tokenizedPercentage);
+                console.log('- property.propertyAddress:', property.propertyAddress);
+                console.log('- property.propertyType:', property.propertyType);
+                
+                // Si la valeur du token est 0, essayer de calculer
+                if (tokenValueEth === 0) {
+                    const propertyValueEth = parseFloat(ethers.utils.formatEther(property.totalValue));
+                    console.log('🧮 TENTATIVE DE CALCUL:');
+                    console.log('- Valeur propriété formatée:', propertyValueEth, 'EUR');
+                    
+                    if (propertyValueEth > 0 && property.tokenizedPercentage > 0) {
+                        const tokenizedValue = (propertyValueEth * property.tokenizedPercentage) / 100;
+                        tokenValueEth = totalSupplyNum > 0 ? tokenizedValue / totalSupplyNum : 0;
+                        console.log('- Valeur tokenisée:', tokenizedValue, 'EUR');
+                        console.log('- Valeur par token calculée:', tokenValueEth, 'EUR');
+                        showAlert('💡 Valeur calculée automatiquement: €' + tokenValueEth.toFixed(6), 'info');
+                    } else {
+                        console.log('❌ IMPOSSIBLE DE CALCULER:');
+                        console.log('- propertyValueEth:', propertyValueEth);
+                        console.log('- tokenizedPercentage:', property.tokenizedPercentage);
+                        showAlert('⚠️ Données de propriété insuffisantes pour calculer la valeur', 'warning');
+                    }
+                }
+                
+                const portfolioValue = balanceNum * tokenValueEth;
+                const ownershipPercentage = totalSupplyNum > 0 ? (balanceNum / totalSupplyNum) * 100 : 0;
+
+                // Mettre à jour les données du portefeuille
+                portfolioData = {
+                    currentValue: portfolioValue,
+                    initialValue: portfolioValue * 0.95, // Simulation d'un gain de 5%
+                    performance: 5.0,
+                    tokens: balanceNum,
+                    tokenValue: tokenValueEth
+                };
+
+                // Mettre à jour l'interface
+                updateKPIs();
+                updatePropertyInfo(property);
+                updateKYCStatus(isQualified);
+                updatePerformanceView();
+                updateTransactionHistory();
+                updateCurrentTokenValue();
+
+                // Afficher le message de succès seulement lors de la première connexion
+                if (!portfolioData.currentValue || portfolioData.currentValue === 0) {
+                    showAlert('✅ Données chargées avec succès!', 'success');
+                }
+
+            } catch (error) {
+                showAlert('❌ Erreur chargement: ' + error.message, 'error');
+                console.error('Erreur détaillée:', error);
+            } finally {
+                isRefreshing = false;
+            }
+        }
+
+        function updateKPIs() {
+            // Valeur du portefeuille
+            document.getElementById('portfolioValue').textContent = 
+                `€${portfolioData.currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            // Performance
+            document.getElementById('performanceValue').textContent = 
+                `+${portfolioData.performance.toFixed(2)}%`;
+            
+            // Tokens possédés
+            document.getElementById('tokensOwned').textContent = 
+                portfolioData.tokens.toLocaleString('fr-FR', {minimumFractionDigits: 0, maximumFractionDigits: 2});
+            
+            // Valeur par token
+            document.getElementById('tokenValue').textContent = 
+                `€${portfolioData.tokenValue.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            // Pourcentage de propriété
+            const ownershipPercent = (portfolioData.tokens / 1000000) * 100; // Supposons 1M tokens au total
+            document.getElementById('tokensPercent').textContent = 
+                `${ownershipPercent.toFixed(4)}% de la propriété`;
+        }
+
+        function updatePropertyInfo(property) {
+            // Mode démo pour masquer les vraies adresses
+            const isDemoMode = true;
+            
+            if (isDemoMode) {
+                document.getElementById('propertyAddress').textContent = "456 Rue de la Tokenisation, 75000 DemoVille, France [FICTIF]";
+                document.getElementById('propertyType').textContent = "Bureau Commercial - Propriété de Démonstration";
+            } else {
+                document.getElementById('propertyAddress').textContent = property.propertyAddress;
+                document.getElementById('propertyType').textContent = property.propertyType;
+            }
+            
+            document.getElementById('propertyValue').textContent = 
+                `€${parseFloat(ethers.utils.formatEther(property.totalValue)).toLocaleString('fr-FR')}`;
+            document.getElementById('propertyPercent').textContent = `${property.tokenizedPercentage}%`;
+            document.getElementById('propertyStatus').textContent = property.isVerified ? '✅ Vérifiée' : '⏳ En cours';
+        }
+
+        function updateKYCStatus(isQualified) {
+            const statusElement = document.getElementById('kycStatus');
+            if (isQualified) {
+                statusElement.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i> Investisseur qualifié';
+                statusElement.style.color = '#27ae60';
+            } else {
+                statusElement.innerHTML = '<i class="fas fa-times-circle" style="color: #e74c3c;"></i> Non qualifié';
+                statusElement.style.color = '#e74c3c';
+            }
+        }
+
+        function updatePerformanceView() {
+            const currentValue = portfolioData.currentValue;
+            const initialValue = portfolioData.initialValue;
+            const gain = currentValue - initialValue;
+            const roi = initialValue > 0 ? ((gain / initialValue) * 100) : 0;
+
+            // Mettre à jour les métriques
+            document.getElementById('initialInvestment').textContent = 
+                `€${initialValue.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            document.getElementById('currentValue').textContent = 
+                `€${currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+            
+            document.getElementById('totalGain').textContent = 
+                `€${gain.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+
+            // Mettre à jour le ROI
+            const roiElement = document.getElementById('roiPercentage');
+            roiElement.textContent = (roi >= 0 ? '+' : '') + roi.toFixed(2) + '%';
+            roiElement.style.color = roi >= 0 ? '#27ae60' : '#e74c3c';
+
+            // Mettre à jour la barre de progression (0-20% scale)
+            const progressFill = document.getElementById('progressFill');
+            const progressPercent = Math.min(Math.max(roi, 0), 20) / 20 * 100;
+            progressFill.style.width = progressPercent + '%';
+
+            // Mettre à jour la timeline
+            document.getElementById('timelineCurrentValue').textContent = 
+                `€${currentValue.toLocaleString('fr-FR', {minimumFractionDigits: 0, maximumFractionDigits: 0})}`;
+        }
+
+        function updateTransactionHistory() {
+            const transactionsList = document.getElementById('transactionsList');
+            
+            // Simuler quelques transactions pour la démonstration
+            const transactions = [
+                {
+                    type: 'buy',
+                    icon: 'plus',
+                    title: 'Achat initial',
+                    date: 'Il y a 15 jours',
+                    amount: '+' + portfolioData.tokens.toFixed(2) + ' tokens'
+                },
+                {
+                    type: 'transfer',
+                    icon: 'exchange-alt',
+                    title: 'Mise à jour valuation',
+                    date: 'Il y a 3 jours',
+                    amount: '+5.2%'
+                }
+            ];
+
+            transactionsList.innerHTML = transactions.map(tx => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="transaction-icon ${tx.type}">
+                            <i class="fas fa-${tx.icon}"></i>
+                        </div>
+                        <div class="transaction-details">
+                            <div class="transaction-type">${tx.title}</div>
+                            <div class="transaction-date">${tx.date}</div>
+                        </div>
+                    </div>
+                    <div class="transaction-amount">${tx.amount}</div>
+                </div>
+            `).join('');
+        }
+
+        async function transferTokens() {
+            const to = document.getElementById('transferTo').value;
+            const amount = document.getElementById('transferAmount').value;
+
+            if (!to || !amount) {
+                showAlert('❌ Remplissez tous les champs', 'error');
+                return;
+            }
+
+            if (!contract) {
+                showAlert('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                const transferBtn = document.getElementById('transferBtn');
+                transferBtn.disabled = true;
+                transferBtn.innerHTML = '<div class="loading"></div> Transfert en cours...';
+
+                showAlert('⏳ Transfert en cours...', 'info');
+                
+                const tx = await contract.transfer(to, ethers.utils.parseEther(amount));
+                showAlert(`⏳ Transaction soumise: ${tx.hash.slice(0, 10)}...`, 'info');
+                
+                await tx.wait();
+                showAlert('✅ Transfert réussi!', 'success');
+                
+                // Nettoyer les champs
+                document.getElementById('transferTo').value = '';
+                document.getElementById('transferAmount').value = '';
+                
+                // Recharger les données
+                await loadAllData();
+
+            } catch (error) {
+                showAlert('❌ Erreur transfert: ' + error.message, 'error');
+            } finally {
+                const transferBtn = document.getElementById('transferBtn');
+                transferBtn.disabled = false;
+                transferBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Transférer';
+            }
+        }
+
+        async function checkKyc() {
+            if (!contract || !userAddress) {
+                showAlert('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                const checkBtn = document.getElementById('checkKycBtn');
+                checkBtn.disabled = true;
+                checkBtn.innerHTML = '<div class="loading"></div> Vérification...';
+
+                const isQualified = await contract.qualifiedInvestors(userAddress);
+                updateKYCStatus(isQualified);
+                
+                showAlert(`👤 Statut KYC vérifié: ${isQualified ? 'Qualifié' : 'Non qualifié'}`, 'info');
+                
+            } catch (error) {
+                showAlert('❌ Erreur KYC: ' + error.message, 'error');
+            } finally {
+                const checkBtn = document.getElementById('checkKycBtn');
+                checkBtn.disabled = false;
+                checkBtn.innerHTML = '<i class="fas fa-search"></i> Vérifier mon KYC';
+            }
+        }
+
+        async function refreshData() {
+            const refreshBtn = document.getElementById('refreshBtn');
+            refreshBtn.innerHTML = '<i class="fas fa-sync fa-spin"></i>';
+            
+            await loadAllData();
+            
+            setTimeout(() => {
+                refreshBtn.innerHTML = '<i class="fas fa-sync"></i>';
+            }, 1000);
+        }
+
+        function updateCurrentTokenValue() {
+            const valueElement = document.getElementById('currentTokenValue');
+            valueElement.textContent = `€${portfolioData.tokenValue.toLocaleString('fr-FR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 4
+            })}`;
+        }
+
+        async function calculateTokenValue() {
+            if (!contract) {
+                showAlert('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                const calculateBtn = document.getElementById('calculateValueBtn');
+                calculateBtn.disabled = true;
+                calculateBtn.innerHTML = '<div class="loading"></div> Calcul en cours...';
+
+                // Récupérer les données de la propriété et du supply
+                const [property, totalSupply] = await Promise.all([
+                    contract.getPropertyMetadata(),
+                    contract.totalSupply()
+                ]);
+
+                const propertyValueEur = parseFloat(ethers.utils.formatEther(property.totalValue));
+                const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                const tokenizedPercentage = property.tokenizedPercentage;
+                
+                console.log('📊 Données pour calcul:');
+                console.log('- Valeur propriété:', propertyValueEur, 'EUR');
+                console.log('- Supply total:', totalSupplyNum, 'tokens');
+                console.log('- % tokenisé:', tokenizedPercentage, '%');
+                
+                if (propertyValueEur > 0 && totalSupplyNum > 0 && tokenizedPercentage > 0) {
+                    // FORMULE: (Valeur propriété × % tokenisé) ÷ Supply total
+                    const tokenizedValue = (propertyValueEur * tokenizedPercentage) / 100;
+                    const calculatedTokenValue = tokenizedValue / totalSupplyNum;
+                    
+                    console.log('💰 Calcul détaillé:');
+                    console.log('- Valeur tokenisée:', tokenizedValue, 'EUR');
+                    console.log('- Valeur par token:', calculatedTokenValue, 'EUR');
+                    
+                    // Mettre à jour les données locales
+                    portfolioData.tokenValue = calculatedTokenValue;
+                    portfolioData.currentValue = portfolioData.tokens * calculatedTokenValue;
+                    portfolioData.initialValue = portfolioData.currentValue * 0.95; // Simulation gain 5%
+                    
+                    // Mettre à jour l'interface
+                    updateKPIs();
+                    updateCurrentTokenValue();
+                    updatePerformanceView();
+                    
+                    // Messages détaillés
+                    showAlert(`✅ Valeur calculée: €${calculatedTokenValue.toFixed(6)} par token`, 'success');
+                    showAlert(`🏢 Propriété: €${propertyValueEur.toLocaleString('fr-FR')} (${tokenizedPercentage}% tokenisé)`, 'info');
+                    showAlert(`🪙 ${totalSupplyNum.toLocaleString('fr-FR')} tokens → Valeur tokenisée: €${tokenizedValue.toLocaleString('fr-FR')}`, 'info');
+                    showAlert(`💼 Votre portefeuille: ${portfolioData.tokens.toLocaleString('fr-FR')} tokens = €${portfolioData.currentValue.toLocaleString('fr-FR')}`, 'success');
+                    
+                } else {
+                    showAlert('❌ Données insuffisantes pour le calcul:', 'error');
+                    if (propertyValueEur <= 0) showAlert('- Valeur de propriété manquante ou nulle', 'error');
+                    if (totalSupplyNum <= 0) showAlert('- Supply total manquant ou nul', 'error');
+                    if (tokenizedPercentage <= 0) showAlert('- Pourcentage tokenisé manquant ou nul', 'error');
+                }
+
+            } catch (error) {
+                showAlert('❌ Erreur calcul: ' + error.message, 'error');
+                console.error('Erreur détaillée:', error);
+            } finally {
+                const calculateBtn = document.getElementById('calculateValueBtn');
+                calculateBtn.disabled = false;
+                calculateBtn.innerHTML = '<i class="fas fa-calculator"></i> Calculer valeur par token';
+            }
+        }
+
+        async function debugContract() {
+            if (!contract) {
+                showAlert('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                const debugBtn = document.getElementById('debugContractBtn');
+                debugBtn.disabled = true;
+                debugBtn.innerHTML = '<div class="loading"></div> Diagnostic...';
+
+                showAlert('🔍 Diagnostic du contrat en cours...', 'info');
+
+                // Récupérer toutes les données
+                const [
+                    name, symbol, totalSupply, tokenValue, balance, property, isQualified
+                ] = await Promise.all([
+                    contract.name(),
+                    contract.symbol(),
+                    contract.totalSupply(),
+                    contract.getTokenValue(),
+                    contract.balanceOf(userAddress),
+                    contract.getPropertyMetadata(),
+                    contract.qualifiedInvestors(userAddress)
+                ]);
+
+                // Affichage détaillé
+                console.log('🔍 DIAGNOSTIC COMPLET DU CONTRAT:');
+                console.log('=====================================');
+                console.log('📋 Informations token:');
+                console.log('  - Nom:', name);
+                console.log('  - Symbole:', symbol);
+                console.log('  - Supply total (brut):', totalSupply.toString());
+                console.log('  - Supply total (formaté):', ethers.utils.formatEther(totalSupply));
+                console.log('  - Valeur token (brut):', tokenValue.toString());
+                console.log('  - Valeur token (formaté):', ethers.utils.formatEther(tokenValue));
+                console.log('');
+                console.log('💼 Votre portefeuille:');
+                console.log('  - Balance (brut):', balance.toString());
+                console.log('  - Balance (formaté):', ethers.utils.formatEther(balance));
+                console.log('  - KYC qualifié:', isQualified);
+                console.log('');
+                console.log('🏢 Propriété:');
+                console.log('  - Adresse:', property.propertyAddress);
+                console.log('  - Type:', property.propertyType);
+                console.log('  - Valeur totale (brut):', property.totalValue.toString());
+                console.log('  - Valeur totale (formaté):', ethers.utils.formatEther(property.totalValue));
+                console.log('  - % tokenisé:', property.tokenizedPercentage);
+                console.log('  - Vérifié:', property.isVerified);
+                console.log('  - Hash document légal:', property.legalDocumentHash);
+                console.log('  - Hash rapport évaluation:', property.valuationReportHash);
+                console.log('  - Dernière évaluation:', new Date(property.lastValuationDate * 1000).toLocaleString());
+
+                // Messages pour l'utilisateur
+                showAlert(`📊 Token: ${name} (${symbol}) - Supply: ${ethers.utils.formatEther(totalSupply)}`, 'info');
+                showAlert(`🏢 Propriété: ${property.propertyAddress} (${property.propertyType})`, 'info');
+                showAlert(`💰 Valeur propriété: €${ethers.utils.formatEther(property.totalValue)} (${property.tokenizedPercentage}% tokenisé)`, 'info');
+                showAlert(`💼 Votre balance: ${ethers.utils.formatEther(balance)} tokens`, 'info');
+                showAlert(`🎫 KYC: ${isQualified ? 'Qualifié ✅' : 'Non qualifié ❌'}`, isQualified ? 'success' : 'warning');
+
+                // Calcul de la valeur théorique
+                const propertyValueNum = parseFloat(ethers.utils.formatEther(property.totalValue));
+                const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                
+                if (propertyValueNum > 0 && totalSupplyNum > 0 && property.tokenizedPercentage > 0) {
+                    const tokenizedValue = (propertyValueNum * property.tokenizedPercentage) / 100;
+                    const theoreticalTokenValue = tokenizedValue / totalSupplyNum;
+                    showAlert(`🧮 Valeur théorique par token: €${theoreticalTokenValue.toFixed(6)}`, 'success');
+                    console.log('💡 CALCUL THÉORIQUE:');
+                    console.log('  - Valeur tokenisée:', tokenizedValue, 'EUR');
+                    console.log('  - Valeur par token:', theoreticalTokenValue, 'EUR');
+                } else {
+                    showAlert('⚠️ Impossible de calculer la valeur théorique', 'warning');
+                }
+
+            } catch (error) {
+                showAlert('❌ Erreur diagnostic: ' + error.message, 'error');
+                console.error('Erreur diagnostic:', error);
+            } finally {
+                const debugBtn = document.getElementById('debugContractBtn');
+                debugBtn.disabled = false;
+                debugBtn.innerHTML = '<i class="fas fa-bug"></i> Diagnostiquer contrat';
+            }
+        }
+
+        function showAlert(message, type) {
+            const alertsContainer = document.getElementById('alerts');
+            const alert = document.createElement('div');
+            alert.className = `alert ${type}`;
+            alert.textContent = message;
+            
+            alertsContainer.appendChild(alert);
+            
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.parentNode.removeChild(alert);
+                    }
+                }, 300);
+            }, 5000);
+        }
+
+        // Auto-refresh modéré des données toutes les 2 minutes
+        let isRefreshing = false;
+        setInterval(() => {
+            if (contract && userAddress && !isRefreshing) {
+                refreshDataSilently();
+            }
+        }, 120000); // 2 minutes au lieu de 30 secondes
+
+        async function refreshDataSilently() {
+            if (isRefreshing) return;
+            isRefreshing = true;
+            
+            try {
+                // Refresh silencieux sans messages
+                const [tokenValue, balance] = await Promise.all([
+                    contract.getTokenValue(),
+                    contract.balanceOf(userAddress)
+                ]);
+
+                const tokenValueEth = parseFloat(ethers.utils.formatEther(tokenValue));
+                const balanceNum = parseFloat(ethers.utils.formatEther(balance));
+                const portfolioValue = balanceNum * tokenValueEth;
+
+                // Mettre à jour seulement si les valeurs ont changé
+                if (Math.abs(portfolioData.currentValue - portfolioValue) > 0.01) {
+                    portfolioData.currentValue = portfolioValue;
+                    portfolioData.tokens = balanceNum;
+                    portfolioData.tokenValue = tokenValueEth;
+                    updateKPIs();
+                }
+            } catch (error) {
+                console.log('Refresh silencieux échoué:', error.message);
+            } finally {
+                isRefreshing = false;
+            }
+        }
+    </script>
+</body>
+</html>

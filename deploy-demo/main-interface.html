@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RWA Real Estate Token - Interface</title>
+    <script src="https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+    <script src="config.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header with Status Bar -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 flex items-center">
+                        <i class="fas fa-building mr-3 text-blue-600"></i>
+                        RWA Real Estate Platform
+                    </h1>
+                    <p class="text-gray-600 mt-2">Plateforme d'investissement immobilier tokenisé</p>
+                </div>
+                <div class="text-right">
+                    <button id="connectWallet" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition duration-200">
+                        <i class="fas fa-wallet mr-2"></i>
+                        Connecter Wallet
+                    </button>
+                    <div id="walletInfo" class="hidden mt-2">
+                        <p class="text-sm text-gray-600">Connecté:</p>
+                        <p id="walletAddress" class="text-xs font-mono bg-gray-100 px-2 py-1 rounded"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Bar -->
+            <div id="statusBar" class="hidden border-t pt-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-6 text-sm">
+                        <div class="flex items-center">
+                            <div id="networkStatus" class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+                            <span id="networkText">Réseau: Non connecté</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="kycStatusIndicator" class="w-3 h-3 rounded-full bg-gray-500 mr-2"></div>
+                            <span id="kycStatusText">KYC: Non vérifié</span>
+                        </div>
+                        <div class="flex items-center">
+                            <div id="roleIndicator" class="w-3 h-3 rounded-full bg-gray-500 mr-2"></div>
+                            <span id="roleText">Rôle: Investisseur</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-coins text-yellow-600 mr-2"></i>
+                            <span id="portfolioSummary">Portefeuille: -</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        <span>DÉMONSTRATION - Propriétés fictives</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Demo Disclaimer Banner -->
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6 rounded-r-lg">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-orange-400"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-orange-800">
+                        Plateforme de Démonstration
+                    </h3>
+                    <div class="mt-2 text-sm text-orange-700">
+                        <p>Cette interface utilise des propriétés <strong>fictives</strong> à des fins éducatives. Aucun actif immobilier réel n'est associé à ces contrats. Les adresses et valeurs sont simulées pour la démonstration de la technologie RWA.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contract Info -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <!-- Property Info -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-home mr-2 text-green-600"></i>
+                    Informations de la Propriété
+                </h2>
+                <div id="propertyInfo" class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Adresse:</span>
+                        <span id="propertyAddress" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Type:</span>
+                        <span id="propertyType" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Valeur totale:</span>
+                        <span id="propertyValue" class="font-medium text-green-600">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">% Tokenisé:</span>
+                        <span id="tokenizedPercentage" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Vérifié:</span>
+                        <span id="isVerified" class="font-medium">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Token Info -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-coins mr-2 text-yellow-600"></i>
+                    Informations du Token
+                </h2>
+                <div id="tokenInfo" class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Nom:</span>
+                        <span id="tokenName" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Symbole:</span>
+                        <span id="tokenSymbol" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Supply Total:</span>
+                        <span id="totalSupply" class="font-medium">-</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Valeur/Token:</span>
+                        <span id="tokenValue" class="font-medium text-blue-600">-</span>
+                    </div>
+                    <div class="mt-2">
+                        <button id="calculateTokenValueBtn" onclick="calculateTokenValueDirect()" class="w-full bg-blue-600 hover:bg-blue-700 text-white text-xs py-1 rounded transition duration-200">
+                            🧮 Calculer valeur
+                        </button>
+                    </div>
+                    <script>
+                        // Fonction directement dans le HTML
+                        function calculateTokenValueDirect() {
+                            console.log('🔥 Calcul de la valeur du token...');
+                            
+                            // Essayer d'appeler la fonction du app.js si elle existe
+                            if (window.manuallyCalculateTokenValue) {
+                                window.manuallyCalculateTokenValue();
+                            } else if (typeof contract !== 'undefined' && contract) {
+                                // Calcul direct
+                                calculateValueDirectly();
+                            } else {
+                                console.log('❌ Connectez-vous d\'abord à MetaMask');
+                                // Optionnel: afficher un message discret
+                                const tokenValueElement = document.getElementById('tokenValue');
+                                if (tokenValueElement) {
+                                    tokenValueElement.textContent = 'Connectez-vous d\'abord';
+                                    tokenValueElement.style.color = '#dc2626';
+                                    setTimeout(() => {
+                                        tokenValueElement.textContent = '-';
+                                        tokenValueElement.style.color = '';
+                                    }, 3000);
+                                }
+                            }
+                        }
+                        
+                        async function calculateValueDirectly() {
+                            try {
+                                console.log('🧮 Calcul direct...');
+                                
+                                // Utiliser les variables globales
+                                const property = await contract.getPropertyMetadata();
+                                const totalSupply = await contract.totalSupply();
+                                
+                                const propertyValueEur = parseFloat(ethers.utils.formatEther(property.totalValue));
+                                const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                                const tokenizedPercentage = property.tokenizedPercentage;
+                                
+                                console.log('Données:', propertyValueEur, tokenizedPercentage, totalSupplyNum);
+                                
+                                if (propertyValueEur > 0 && totalSupplyNum > 0 && tokenizedPercentage > 0) {
+                                    const tokenizedValue = (propertyValueEur * tokenizedPercentage) / 100;
+                                    const calculatedTokenValue = tokenizedValue / totalSupplyNum;
+                                    
+                                    // Formatage intelligent de la valeur
+                                    let formattedValue;
+                                    if (calculatedTokenValue >= 1) {
+                                        // Si >= 1€, afficher avec 2 décimales
+                                        formattedValue = '€' + calculatedTokenValue.toLocaleString('fr-FR', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        });
+                                    } else if (calculatedTokenValue >= 0.01) {
+                                        // Si entre 0.01€ et 1€, afficher avec 4 décimales
+                                        formattedValue = '€' + calculatedTokenValue.toFixed(4);
+                                    } else {
+                                        // Si < 0.01€, afficher avec 6 décimales
+                                        formattedValue = '€' + calculatedTokenValue.toFixed(6);
+                                    }
+                                    
+                                    document.getElementById('tokenValue').textContent = formattedValue;
+                                    console.log(`✅ Valeur calculée: ${formattedValue} par token`);
+                                    
+                                    // Calcul optionnel de la valeur du portefeuille
+                                    const myBalanceElement = document.getElementById('myBalance');
+                                    if (myBalanceElement && myBalanceElement.textContent !== '-') {
+                                        const balanceText = myBalanceElement.textContent.replace(/[^0-9.,]/g, '').replace(',', '');
+                                        const balance = parseFloat(balanceText);
+                                        if (!isNaN(balance)) {
+                                            const portfolioValue = balance * calculatedTokenValue;
+                                            console.log(`💼 Valeur de votre portefeuille: €${portfolioValue.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`);
+                                        }
+                                    }
+                                } else {
+                                    console.log('❌ Données insuffisantes pour le calcul');
+                                    console.log('- Valeur propriété:', propertyValueEur);
+                                    console.log('- % tokenisé:', tokenizedPercentage);
+                                    console.log('- Supply total:', totalSupplyNum);
+                                }
+                            } catch (error) {
+                                console.error('❌ Erreur lors du calcul:', error);
+                                const tokenValueElement = document.getElementById('tokenValue');
+                                if (tokenValueElement) {
+                                    tokenValueElement.textContent = 'Erreur calcul';
+                                    tokenValueElement.style.color = '#dc2626';
+                                    setTimeout(() => {
+                                        tokenValueElement.textContent = '-';
+                                        tokenValueElement.style.color = '';
+                                    }, 3000);
+                                }
+                            }
+                        }
+                    </script>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Mon Balance:</span>
+                        <span id="myBalance" class="font-medium text-purple-600">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Investor Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-user-check mr-2 text-blue-600"></i>
+                    Actions Investisseur
+                </h3>
+                
+                <!-- KYC Status -->
+                <div class="mb-4 p-3 bg-gray-50 rounded">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Statut KYC:</span>
+                        <span id="kycStatus" class="px-2 py-1 text-xs rounded">-</span>
+                    </div>
+                </div>
+
+                <!-- Qualify Investor -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Qualifier un investisseur</label>
+                    <div class="flex">
+                        <input type="text" id="qualifyAddress" placeholder="0x..." 
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-l focus:outline-none focus:border-blue-500">
+                        <button id="qualifyBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-r transition duration-200">
+                            <i class="fas fa-check"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Transfer Tokens -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Transférer des tokens</label>
+                    <input type="text" id="transferTo" placeholder="Adresse destinataire" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded mb-2 focus:outline-none focus:border-blue-500">
+                    <input type="number" id="transferAmount" placeholder="Montant" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded mb-2 focus:outline-none focus:border-blue-500">
+                    <button id="transferBtn" data-role="investor" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition duration-200">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Transférer
+                    </button>
+                </div>
+            </div>
+
+            <!-- Owner Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6" data-role="owner">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-crown mr-2 text-yellow-600"></i>
+                    Actions Propriétaire
+                </h3>
+
+                <!-- Update Valuation -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nouvelle valorisation (EUR)</label>
+                    <input type="number" id="newValuation" placeholder="5000000" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded mb-2 focus:outline-none focus:border-blue-500">
+                    <input type="text" id="valuationHash" placeholder="Hash du rapport d'évaluation" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded mb-2 focus:outline-none focus:border-blue-500">
+                    <button id="updateValuationBtn" class="w-full bg-yellow-600 hover:bg-yellow-700 text-white py-2 rounded transition duration-200">
+                        <i class="fas fa-chart-line mr-2"></i>
+                        Mettre à jour
+                    </button>
+                </div>
+
+                <!-- Verify Property -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Vérifier la propriété</label>
+                    <input type="text" id="verificationHash" placeholder="Hash des documents légaux" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded mb-2 focus:outline-none focus:border-blue-500">
+                    <button id="verifyPropertyBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition duration-200">
+                        <i class="fas fa-shield-alt mr-2"></i>
+                        Vérifier
+                    </button>
+                </div>
+
+                <!-- Emergency Controls -->
+                <div class="space-y-2">
+                    <button id="pauseBtn" class="w-full bg-red-600 hover:bg-red-700 text-white py-2 rounded transition duration-200">
+                        <i class="fas fa-pause mr-2"></i>
+                        Pauser le contrat
+                    </button>
+                    <button id="unpauseBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition duration-200">
+                        <i class="fas fa-play mr-2"></i>
+                        Reprendre le contrat
+                    </button>
+                </div>
+            </div>
+
+            <!-- Property Manager Actions -->
+            <div class="bg-white rounded-lg shadow-md p-6" data-role="manager">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-building-user mr-2 text-purple-600"></i>
+                    Gestionnaire de Propriété
+                </h3>
+
+                <!-- Revenue Info -->
+                <div class="mb-4 p-3 bg-gray-50 rounded">
+                    <div class="text-sm text-gray-600 mb-1">Revenus collectés:</div>
+                    <div id="totalRevenue" class="font-semibold text-green-600">0 EUR</div>
+                    <div class="text-sm text-gray-600 mb-1 mt-2">Dividendes distribués:</div>
+                    <div id="totalDistributed" class="font-semibold text-blue-600">0 ETH</div>
+                    <div class="text-sm text-gray-600 mb-1 mt-2">Revenus en attente:</div>
+                    <div id="pendingRevenue" class="font-semibold text-orange-600">0 EUR</div>
+                </div>
+
+                <!-- Distribution Preview -->
+                <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+                    <div class="text-sm font-medium text-blue-800 mb-2">💰 Votre part des revenus:</div>
+                    <div id="myRevenueShare" class="font-semibold text-blue-600 text-lg">0 EUR</div>
+                    <div class="text-xs text-blue-600 mt-1">
+                        Basé sur vos <span id="myTokenPercentage">0%</span> de tokens
+                    </div>
+                </div>
+
+                <!-- Auto Distribution Calculator -->
+                <div class="mb-4 p-3 bg-green-50 border border-green-200 rounded">
+                    <div class="text-sm font-medium text-green-800 mb-2">🧮 Distribution suggérée:</div>
+                    <div class="text-xs text-green-600 mb-2">Montant ETH optimal à distribuer:</div>
+                    <div id="suggestedETH" class="font-semibold text-green-600">0 ETH</div>
+                    <div class="text-xs text-green-500 mt-1">
+                        Vous recevriez: <span id="myETHShare">0 ETH</span>
+                    </div>
+                    <button onclick="debugRevenueCalculation()" class="mt-2 w-full bg-red-600 hover:bg-red-700 text-white text-xs py-1 rounded mb-2">
+                        🔍 Debug Calculs
+                    </button>
+                    <button onclick="forceRecalculateRevenue()" class="w-full bg-green-600 hover:bg-green-700 text-white text-xs py-1 rounded mb-2">
+                        🔧 Corriger Calculs
+                    </button>
+                    <button onclick="checkMyDividends()" class="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs py-1 rounded">
+                        💰 Mes Dividendes Reçus
+                    </button>
+                </div>
+                
+                <script>
+                function debugRevenueCalculation() {
+                    console.log('🔍 DEBUG MANUEL DES CALCULS');
+                    console.log('✅ État des variables globales:');
+                    console.log('- window.contract:', !!window.contract);
+                    console.log('- window.userAddress:', window.userAddress);
+                    console.log('- contract (local):', typeof contract !== 'undefined' ? !!contract : 'undefined');
+                    console.log('- userAddress (local):', typeof userAddress !== 'undefined' ? userAddress : 'undefined');
+                    
+                    // Vérifier toutes les sources possibles de contrat
+                    const finalContract = window.contract || (typeof contract !== 'undefined' ? contract : null);
+                    const finalUserAddress = window.userAddress || (typeof userAddress !== 'undefined' ? userAddress : null);
+                    
+                    if (!finalContract) {
+                        console.log('❌ Aucun contrat trouvé dans window.contract ou variable locale');
+                        alert('❌ Connectez-vous d\'abord ou vérifiez la connexion');
+                        return;
+                    }
+                    
+                    if (!finalUserAddress) {
+                        console.log('❌ Aucune adresse utilisateur trouvée');
+                        alert('❌ Adresse utilisateur non trouvée');
+                        return;
+                    }
+                    
+                    console.log('✅ Utilisation du contrat:', finalContract.address);
+                    console.log('✅ Utilisation de l\'adresse:', finalUserAddress);
+                    
+                    // Test direct des valeurs avec variables sécurisées
+                    finalContract.totalRevenueCollected().then(totalRevenue => {
+                        console.log('📊 Total revenus (brut):', totalRevenue.toString());
+                        console.log('📊 Total revenus (nombre):', parseInt(totalRevenue.toString()));
+                        
+                        return finalContract.balanceOf(finalUserAddress);
+                    }).then(myBalance => {
+                        console.log('💼 Mon balance (brut):', myBalance.toString());
+                        console.log('💼 Mon balance (formaté):', ethers.utils.formatEther(myBalance));
+                        
+                        window.debugMyBalance = myBalance; // Stockage temporaire
+                        return finalContract.totalSupply();
+                    }).then(totalSupply => {
+                        console.log('🪙 Total supply (brut):', totalSupply.toString());
+                        console.log('🪙 Total supply (formaté):', ethers.utils.formatEther(totalSupply));
+                        
+                        // Calcul manuel avec les vraies valeurs
+                        const myBalanceNum = parseFloat(ethers.utils.formatEther(window.debugMyBalance));
+                        const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                        const myPercentage = (myBalanceNum / totalSupplyNum) * 100;
+                        
+                        console.log('🧮 CALCUL MANUEL CORRIGÉ:');
+                        console.log('- Mon balance numérique:', myBalanceNum);
+                        console.log('- Total supply numérique:', totalSupplyNum);
+                        console.log('- Mon %:', myPercentage.toFixed(4) + '%');
+                        console.log('- Ma part de 62000 EUR:', (62000 * myPercentage / 100).toFixed(2), 'EUR');
+                        
+                        // Nettoyage
+                        delete window.debugMyBalance;
+                        
+                        // Affichage comparatif
+                        const currentDisplayedBalance = document.getElementById('myBalance')?.textContent || 'Non trouvé';
+                        const currentDisplayedPercentage = document.getElementById('myTokenPercentage')?.textContent || 'Non trouvé';
+                        
+                        console.log('📱 AFFICHAGE INTERFACE:');
+                        console.log('- Balance affiché:', currentDisplayedBalance);
+                        console.log('- Pourcentage affiché:', currentDisplayedPercentage);
+                        
+                        alert(`🔍 Debug détaillé:\n\nBalance réel: ${myBalanceNum.toLocaleString('fr-FR')} tokens\nPourcentage réel: ${myPercentage.toFixed(4)}%\nMa part: ${(62000 * myPercentage / 100).toFixed(2)} EUR\n\nInterface affiche:\nBalance: ${currentDisplayedBalance}\nPourcentage: ${currentDisplayedPercentage}`);
+                        
+                    }).catch(error => {
+                        console.error('❌ Erreur debug:', error);
+                        alert('❌ Erreur: ' + error.message);
+                    });
+                }
+                
+                function forceRecalculateRevenue() {
+                    console.log('🔧 CORRECTION FORCÉE DES CALCULS');
+                    
+                    const finalContract = window.contract || (typeof contract !== 'undefined' ? contract : null);
+                    const finalUserAddress = window.userAddress || (typeof userAddress !== 'undefined' ? userAddress : null);
+                    
+                    if (!finalContract || !finalUserAddress) {
+                        alert('❌ Connectez-vous d\'abord');
+                        return;
+                    }
+                    
+                    // Recalcul direct avec les bonnes fonctions
+                    Promise.all([
+                        finalContract.totalRevenueCollected(),
+                        finalContract.balanceOf(finalUserAddress),
+                        finalContract.totalSupply()
+                    ]).then(([totalRevenue, myBalance, totalSupply]) => {
+                        
+                        // Calculs directs avec ethers.utils.formatEther
+                        const totalRevenueEUR = parseInt(totalRevenue.toString());
+                        const myBalanceNumber = parseFloat(ethers.utils.formatEther(myBalance));
+                        const totalSupplyNumber = parseFloat(ethers.utils.formatEther(totalSupply));
+                        const myPercentage = (myBalanceNumber / totalSupplyNumber) * 100;
+                        const myRevenueShare = (totalRevenueEUR * myPercentage) / 100;
+                        
+                        console.log('✅ CORRECTION APPLIQUÉE:');
+                        console.log('- Nouveau pourcentage:', myPercentage.toFixed(4) + '%');
+                        console.log('- Nouvelle part revenue:', myRevenueShare.toFixed(2), 'EUR');
+                        
+                        // Mise à jour forcée de l'interface
+                        document.getElementById('myTokenPercentage').textContent = myPercentage.toFixed(2) + '%';
+                        document.getElementById('myRevenueShare').textContent = myRevenueShare.toLocaleString('fr-FR', {
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 2
+                        }) + ' EUR';
+                        
+                        // Mise à jour de la distribution ETH
+                        const eurToEthRate = 0.0003;
+                        const suggestedETHAmount = totalRevenueEUR * eurToEthRate;
+                        const myETHShare = (suggestedETHAmount * myPercentage) / 100;
+                        
+                        document.getElementById('suggestedETH').textContent = suggestedETHAmount.toFixed(6) + ' ETH';
+                        document.getElementById('myETHShare').textContent = myETHShare.toFixed(6) + ' ETH';
+                        
+                        alert(`🔧 CORRECTION RÉUSSIE!\n\nNouveaux calculs:\n- Votre part: ${myPercentage.toFixed(4)}%\n- Vos revenus: ${myRevenueShare.toFixed(2)} EUR\n- Votre ETH: ${myETHShare.toFixed(6)} ETH`);
+                        
+                    }).catch(error => {
+                        console.error('❌ Erreur correction:', error);
+                        alert('❌ Erreur: ' + error.message);
+                    });
+                }
+                
+                async function testAutoDistribute() {
+                    console.log('🧪 testAutoDistribute appelée');
+                    
+                    // Vérifier l'état des variables
+                    const finalContract = window.contract || (typeof contract !== 'undefined' ? contract : null);
+                    const finalUserAddress = window.userAddress || (typeof userAddress !== 'undefined' ? userAddress : null);
+                    
+                    if (!finalContract || !finalUserAddress) {
+                        console.log('❌ Pas de contrat ou d\'adresse disponible');
+                        alert('❌ Connectez-vous d\'abord');
+                        return;
+                    }
+                    
+                    console.log('✅ Contrat trouvé, vérification des permissions...');
+                    
+                    // Vérifier les rôles avant de continuer
+                    try {
+                        const [owner, propertyManager] = await Promise.all([
+                            finalContract.owner(),
+                            finalContract.propertyManager()
+                        ]);
+                        
+                        console.log('🔍 VÉRIFICATION DES RÔLES:');
+                        console.log('- Votre adresse:', finalUserAddress);
+                        console.log('- Owner du contrat:', owner);
+                        console.log('- Property manager:', propertyManager);
+                        
+                        const isOwner = finalUserAddress.toLowerCase() === owner.toLowerCase();
+                        const isPropertyManager = finalUserAddress.toLowerCase() === propertyManager.toLowerCase();
+                        
+                        console.log('- Vous êtes owner:', isOwner);
+                        console.log('- Vous êtes property manager:', isPropertyManager);
+                        
+                        if (!isOwner && !isPropertyManager) {
+                            const helpMsg = `❌ ERREUR DE PERMISSION:\n\nSeul le property manager peut distribuer les dividendes.\n\nVotre adresse: ${finalUserAddress.slice(0, 10)}...\nProperty manager: ${propertyManager.slice(0, 10)}...\nOwner: ${owner.slice(0, 10)}...\n\n${isOwner ? '💡 Vous êtes l\'owner. Vous devez d\'abord vous définir comme property manager dans le smart contract.' : '💡 Contactez l\'owner pour devenir property manager.'}`;
+                            alert(helpMsg);
+                            return;
+                        }
+                        
+                        console.log('✅ Permissions OK, début de la distribution automatique');
+                        
+                    } catch (error) {
+                        console.error('❌ Erreur lors de la vérification des rôles:', error);
+                        alert('❌ Impossible de vérifier les permissions');
+                        return;
+                    }
+                    
+                    // Implémenter directement la logique de distribution ici
+                    try {
+                        console.log('🧮 Calcul de la distribution automatique...');
+                        
+                        // Ajouter un message visuel
+                        const statusDiv = document.getElementById('statusMessages');
+                        if (statusDiv) {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = 'bg-blue-100 text-blue-800 px-4 py-3 rounded mb-2 border';
+                            messageDiv.textContent = '🧮 Calcul de la distribution automatique...';
+                            statusDiv.appendChild(messageDiv);
+                        }
+                        
+                        // Récupérer les données nécessaires
+                        const [totalRevenue, totalDistributed] = await Promise.all([
+                            finalContract.totalRevenueCollected(),
+                            finalContract.totalRevenueDistributed()
+                        ]);
+                        
+                        const pendingRevenueEUR = parseInt(totalRevenue.toString());
+                        const totalDistributedETH = parseFloat(ethers.utils.formatEther(totalDistributed));
+                        
+                        console.log('💰 VÉRIFICATION DES REVENUS:');
+                        console.log('- Total revenus collectés:', pendingRevenueEUR, 'EUR');
+                        console.log('- Total distribué:', totalDistributedETH, 'ETH');
+                        
+                        // Problème détecté: Le smart contract devrait empêcher les distributions multiples
+                        // Pour l'instant, on va ajouter une vérification côté interface
+                        
+                        if (pendingRevenueEUR <= 0) {
+                            alert('❌ Aucun revenu à distribuer');
+                            return;
+                        }
+                        
+                        // Vérification anti-spam des distributions
+                        const lastDistributionTime = localStorage.getItem('lastDistribution_' + finalContract.address);
+                        const now = Date.now();
+                        const cooldownPeriod = 60000; // 1 minute de cooldown
+                        
+                        if (lastDistributionTime && (now - parseInt(lastDistributionTime)) < cooldownPeriod) {
+                            const remainingTime = Math.ceil((cooldownPeriod - (now - parseInt(lastDistributionTime))) / 1000);
+                            alert(`⏳ COOLDOWN ACTIF:\n\nVous devez attendre ${remainingTime} secondes avant la prochaine distribution.\n\n💡 Cette protection évite les distributions multiples accidentelles.`);
+                            return;
+                        }
+                        
+                        console.log('✅ Vérifications OK, revenus disponibles:', pendingRevenueEUR, 'EUR');
+                        
+                        // Calculer le montant ETH suggéré - TRÈS RÉDUIT POUR TESTS
+                        // Votre balance: 0.05 ETH, donc utilisons 0.01 ETH pour les tests
+                        const fixedTestAmount = 0.01; // Montant fixe pour les tests (1% de votre balance)
+                        const suggestedETHAmount = fixedTestAmount;
+                        
+                        console.log('📊 Distribution suggérée:', suggestedETHAmount.toFixed(6), 'ETH pour', pendingRevenueEUR, 'EUR');
+                        
+                        // Demander confirmation
+                        const confirmMsg = `💰 Distribution automatique (TEST):\n\n${suggestedETHAmount.toFixed(6)} ETH pour ${pendingRevenueEUR.toLocaleString('fr-FR')} EUR de revenus\n\n⚠️ MONTANT RÉDUIT POUR TEST SUR SEPOLIA\n(En production: taux réel EUR/ETH)\n\nVotre balance: ~0.05 ETH\nCoût transaction: ~${suggestedETHAmount.toFixed(6)} ETH + gas\n\nConfirmer la transaction ?`;
+                        
+                        if (!confirm(confirmMsg)) {
+                            console.log('❌ Distribution annulée par l\'utilisateur');
+                            return;
+                        }
+                        
+                        console.log('⏳ Envoi de la transaction...');
+                        
+                        const tx = await finalContract.distributeDividends({
+                            value: ethers.utils.parseEther(suggestedETHAmount.toString())
+                        });
+                        
+                        console.log('📤 Transaction envoyée:', tx.hash);
+                        alert(`⏳ Transaction envoyée: ${tx.hash.slice(0, 10)}...`);
+                        
+                        await tx.wait();
+                        
+                        // Sauvegarder le timestamp de la dernière distribution
+                        localStorage.setItem('lastDistribution_' + finalContract.address, Date.now().toString());
+                        
+                        console.log('✅ Distribution réussie!');
+                        alert('✅ Distribution automatique réussie!');
+                        
+                        // Recharger les données
+                        if (typeof loadContractData === 'function') {
+                            loadContractData();
+                        } else if (window.loadContractData) {
+                            window.loadContractData();
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ Erreur distribution automatique:', error);
+                        alert('❌ Erreur: ' + (error.reason || error.message));
+                    }
+                }
+                
+                async function checkMyDividends() {
+                    console.log('💰 Vérification des dividendes reçus...');
+                    
+                    const finalContract = window.contract || (typeof contract !== 'undefined' ? contract : null);
+                    const finalUserAddress = window.userAddress || (typeof userAddress !== 'undefined' ? userAddress : null);
+                    
+                    if (!finalContract || !finalUserAddress) {
+                        alert('❌ Connectez-vous d\'abord');
+                        return;
+                    }
+                    
+                    try {
+                        // Obtenir le provider pour récupérer la balance ETH
+                        const provider = finalContract.provider;
+                        
+                        // Récupérer les informations
+                        const [currentBalance, totalDistributed, myTokens, totalSupply] = await Promise.all([
+                            provider.getBalance(finalUserAddress),
+                            finalContract.totalRevenueDistributed(),
+                            finalContract.balanceOf(finalUserAddress),
+                            finalContract.totalSupply()
+                        ]);
+                        
+                        const balanceETH = parseFloat(ethers.utils.formatEther(currentBalance));
+                        const totalDistributedETH = parseFloat(ethers.utils.formatEther(totalDistributed));
+                        const myTokensNum = parseFloat(ethers.utils.formatEther(myTokens));
+                        const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                        const myPercentage = (myTokensNum / totalSupplyNum) * 100;
+                        
+                        // Calculer mes dividendes théoriques
+                        const myExpectedDividends = (totalDistributedETH * myPercentage) / 100;
+                        
+                        console.log('💰 RÉSUMÉ DES DIVIDENDES:');
+                        console.log('- Balance ETH actuelle:', balanceETH.toFixed(6), 'ETH');
+                        console.log('- Total distribué par le contrat:', totalDistributedETH.toFixed(6), 'ETH');
+                        console.log('- Ma part attendue:', myExpectedDividends.toFixed(6), 'ETH');
+                        console.log('- Mon pourcentage:', myPercentage.toFixed(4) + '%');
+                        
+                        // Affichage pour l'utilisateur
+                        const message = `💰 VOS DIVIDENDES:\n\n📊 Votre participation: ${myPercentage.toFixed(2)}%\n💎 Total distribué par le contrat: ${totalDistributedETH.toFixed(6)} ETH\n🎯 Votre part théorique: ${myExpectedDividends.toFixed(6)} ETH\n\n💳 Balance ETH actuelle: ${balanceETH.toFixed(6)} ETH\n\n${totalDistributedETH > 0 ? '✅ Des dividendes ont été distribués!' : '⏳ Aucune distribution pour le moment'}\n\n💡 Consultez l'historique MetaMask pour voir les transactions "Receive"`;
+                        
+                        alert(message);
+                        
+                    } catch (error) {
+                        console.error('❌ Erreur vérification dividendes:', error);
+                        alert('❌ Erreur: ' + error.message);
+                    }
+                }
+                </script>
+
+                <!-- Collect Revenue -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Collecter revenus (EUR)</label>
+                    <input type="number" id="revenueAmount" placeholder="10000" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded mb-2 focus:outline-none focus:border-blue-500">
+                    <button id="collectRevenueBtn" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 rounded transition duration-200">
+                        <i class="fas fa-money-bill-wave mr-2"></i>
+                        Collecter
+                    </button>
+                </div>
+
+                <!-- Distribute Dividends -->
+                <div class="mb-4">
+                    <div class="flex gap-2 mb-2">
+                        <button id="autoDistributeBtn" onclick="testAutoDistribute()" class="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded transition duration-200">
+                            <i class="fas fa-magic mr-2"></i>
+                            Distribution Auto
+                        </button>
+                        <button id="showManualBtn" class="px-3 bg-gray-600 hover:bg-gray-700 text-white py-2 rounded transition duration-200">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                    
+                    <div id="manualDistribution" class="hidden">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Distribuer dividendes (ETH)</label>
+                        <input type="number" id="dividendAmount" placeholder="0.1" step="0.001"
+                               class="w-full px-3 py-2 border border-gray-300 rounded mb-2 focus:outline-none focus:border-blue-500">
+                        <button id="distributeDividendsBtn" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded transition duration-200">
+                            <i class="fas fa-gift mr-2"></i>
+                            Distribuer Manuellement
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modern Notification System -->
+        <div id="notificationContainer" class="fixed top-4 right-4 z-50 space-y-2" style="max-width: 400px;"></div>
+        
+        <!-- Legacy Status Messages -->
+        <div id="statusMessages" class="mt-6"></div>
+    </div>
+
+    <!-- Notification Styles -->
+    <style>
+        .notification {
+            transform: translateX(100%);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+            opacity: 1;
+        }
+        
+        .notification.hide {
+            transform: translateX(100%);
+            opacity: 0;
+        }
+
+        .status-indicator {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .btn-primary {
+            @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200;
+        }
+        
+        .btn-secondary {
+            @apply bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200;
+        }
+        
+        .btn-success {
+            @apply bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200;
+        }
+        
+        .btn-danger {
+            @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200;
+        }
+        
+        .btn-warning {
+            @apply bg-yellow-600 hover:bg-yellow-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200;
+        }
+    </style>
+
+    <script src="app.js"></script>
+    
+    <!-- Enhanced JavaScript for Modern UI -->
+    <script>
+        // Modern Notification System
+        class NotificationManager {
+            constructor() {
+                this.container = document.getElementById('notificationContainer');
+            }
+            
+            show({ type = 'info', title, message, duration = 5000, actions = [] }) {
+                const notification = this.createNotification(type, title, message, actions);
+                this.container.appendChild(notification);
+                
+                // Trigger animation
+                setTimeout(() => notification.classList.add('show'), 10);
+                
+                // Auto remove
+                if (duration > 0) {
+                    setTimeout(() => this.remove(notification), duration);
+                }
+                
+                return notification;
+            }
+            
+            createNotification(type, title, message, actions) {
+                const notification = document.createElement('div');
+                notification.className = `notification bg-white rounded-lg shadow-lg border-l-4 p-4 ${this.getTypeStyles(type)}`;
+                
+                notification.innerHTML = `
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="${this.getTypeIcon(type)} text-lg"></i>
+                        </div>
+                        <div class="ml-3 flex-1">
+                            ${title ? `<h4 class="font-semibold text-gray-800">${title}</h4>` : ''}
+                            <p class="text-gray-600 text-sm mt-1">${message}</p>
+                            ${actions.length > 0 ? this.createActions(actions) : ''}
+                        </div>
+                        <button onclick="notifications.remove(this.parentElement.parentElement)" class="ml-3 text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                return notification;
+            }
+            
+            getTypeStyles(type) {
+                const styles = {
+                    success: 'border-green-500',
+                    error: 'border-red-500',
+                    warning: 'border-yellow-500',
+                    info: 'border-blue-500'
+                };
+                return styles[type] || styles.info;
+            }
+            
+            getTypeIcon(type) {
+                const icons = {
+                    success: 'fas fa-check-circle text-green-500',
+                    error: 'fas fa-exclamation-circle text-red-500',
+                    warning: 'fas fa-exclamation-triangle text-yellow-500',
+                    info: 'fas fa-info-circle text-blue-500'
+                };
+                return icons[type] || icons.info;
+            }
+            
+            createActions(actions) {
+                return `
+                    <div class="mt-2 space-x-2">
+                        ${actions.map(action => 
+                            `<button onclick="${action.action}" class="text-sm px-3 py-1 rounded ${action.style || 'bg-gray-100 hover:bg-gray-200'}">${action.label}</button>`
+                        ).join('')}
+                    </div>
+                `;
+            }
+            
+            remove(notification) {
+                notification.classList.add('hide');
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }
+            
+            // Helpers for common notification types
+            success(title, message, options = {}) {
+                return this.show({ type: 'success', title, message, ...options });
+            }
+            
+            error(title, message, options = {}) {
+                return this.show({ type: 'error', title, message, duration: 8000, ...options });
+            }
+            
+            warning(title, message, options = {}) {
+                return this.show({ type: 'warning', title, message, ...options });
+            }
+            
+            info(title, message, options = {}) {
+                return this.show({ type: 'info', title, message, ...options });
+            }
+        }
+        
+        // Global notification manager
+        const notifications = new NotificationManager();
+        
+        // Enhanced Status Bar Manager
+        class StatusBarManager {
+            constructor() {
+                this.statusBar = document.getElementById('statusBar');
+                this.networkStatus = document.getElementById('networkStatus');
+                this.networkText = document.getElementById('networkText');
+                this.kycStatusIndicator = document.getElementById('kycStatusIndicator');
+                this.kycStatusText = document.getElementById('kycStatusText');
+                this.roleIndicator = document.getElementById('roleIndicator');
+                this.roleText = document.getElementById('roleText');
+                this.portfolioSummary = document.getElementById('portfolioSummary');
+            }
+            
+            show() {
+                this.statusBar.classList.remove('hidden');
+            }
+            
+            updateNetwork(connected, chainName = 'Sepolia') {
+                this.networkStatus.className = `w-3 h-3 rounded-full mr-2 ${connected ? 'bg-green-500 status-indicator' : 'bg-red-500'}`;
+                this.networkText.textContent = `Réseau: ${connected ? chainName : 'Non connecté'}`;
+            }
+            
+            updateKYC(verified) {
+                this.kycStatusIndicator.className = `w-3 h-3 rounded-full mr-2 ${verified ? 'bg-green-500' : 'bg-red-500'}`;
+                this.kycStatusText.textContent = `KYC: ${verified ? 'Vérifié ✓' : 'Non vérifié'}`;
+            }
+            
+            updateRole(isOwner, isManager) {
+                let role = 'Investisseur';
+                let color = 'bg-blue-500';
+                
+                if (isOwner) {
+                    role = 'Propriétaire';
+                    color = 'bg-purple-500';
+                } else if (isManager) {
+                    role = 'Gestionnaire';
+                    color = 'bg-orange-500';
+                }
+                
+                this.roleIndicator.className = `w-3 h-3 rounded-full mr-2 ${color}`;
+                this.roleText.textContent = `Rôle: ${role}`;
+            }
+            
+            updatePortfolio(tokens, value) {
+                if (tokens > 0) {
+                    this.portfolioSummary.textContent = `Portefeuille: ${this.formatNumber(tokens)} tokens (${this.formatCurrency(value)})`;
+                } else {
+                    this.portfolioSummary.textContent = 'Portefeuille: Aucun token';
+                }
+            }
+            
+            formatNumber(num) {
+                return new Intl.NumberFormat('fr-FR', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                }).format(num);
+            }
+            
+            formatCurrency(amount) {
+                return new Intl.NumberFormat('fr-FR', {
+                    style: 'currency',
+                    currency: 'EUR',
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(amount);
+            }
+        }
+        
+        // Global status bar manager
+        const statusBar = new StatusBarManager();
+        
+        // Currency formatting utilities
+        window.formatCurrency = function(amount, currency = 'EUR', decimals = 2) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'currency',
+                currency: currency,
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(amount);
+        };
+        
+        window.formatTokens = function(amount, decimals = 0) {
+            return new Intl.NumberFormat('fr-FR', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: decimals
+            }).format(amount);
+        };
+        
+        window.formatPercentage = function(value, decimals = 2) {
+            return new Intl.NumberFormat('fr-FR', {
+                style: 'percent',
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(value / 100);
+        };
+    </script>
+</body>
+</html>

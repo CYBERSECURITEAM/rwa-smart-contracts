@@ -1,0 +1,21 @@
+{
+  "name": "rwa-smart-contracts",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "frontend": "cd frontend && python3 -m http.server 3000",
+    "dev": "cd frontend && live-server --port=3000 --open=simple.html",
+    "start": "cd frontend && live-server --port=3000 --open=index.html"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.3.0",
+    "dotenv": "^16.5.0",
+    "hardhat": "^2.24.2"
+  }
+}

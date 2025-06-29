@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RWA Demo Platform - Tokenisation Immobilière</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .demo-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .demo-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white">
+        <div class="container mx-auto px-6 py-16">
+            <div class="text-center">
+                <h1 class="text-5xl font-bold mb-4">
+                    <i class="fas fa-building mr-3"></i>
+                    RWA Demo Platform
+                </h1>
+                <p class="text-xl mb-8 opacity-90">
+                    Démonstration de Tokenisation d'Actifs Immobiliers sur Ethereum
+                </p>
+                <div class="bg-orange-100 border border-orange-300 text-orange-800 px-6 py-4 rounded-lg inline-block">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Projet de Démonstration</strong> - Propriétés fictives à des fins éducatives
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Cards -->
+    <section class="py-16">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">
+                Explorez les Interfaces
+            </h2>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Interface Complète -->
+                <div class="demo-card bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-blue-500 text-white p-6">
+                        <i class="fas fa-desktop text-3xl mb-4"></i>
+                        <h3 class="text-xl font-bold">Interface Complète</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">
+                            Interface principale avec toutes les fonctionnalités : gestion des tokens, revenus, distributions, actions propriétaire.
+                        </p>
+                        <ul class="text-sm text-gray-500 mb-6">
+                            <li>✓ Système de notifications moderne</li>
+                            <li>✓ Status bar intelligente</li>
+                            <li>✓ Interface adaptative par rôle</li>
+                            <li>✓ Gestion complète des revenus</li>
+                        </ul>
+                        <a href="main-interface.html" class="block w-full bg-blue-500 hover:bg-blue-600 text-white text-center py-3 rounded-lg transition duration-200">
+                            <i class="fas fa-rocket mr-2"></i>
+                            Accéder à l'Interface
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Dashboard Investisseur -->
+                <div class="demo-card bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-green-500 text-white p-6">
+                        <i class="fas fa-chart-line text-3xl mb-4"></i>
+                        <h3 class="text-xl font-bold">Dashboard Investisseur</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">
+                            Interface optimisée pour les investisseurs avec focus sur la performance et le suivi du portefeuille.
+                        </p>
+                        <ul class="text-sm text-gray-500 mb-6">
+                            <li>✓ Vue d'ensemble du portefeuille</li>
+                            <li>✓ Métriques de performance</li>
+                            <li>✓ Historique des dividendes</li>
+                            <li>✓ Interface moderne et intuitive</li>
+                        </ul>
+                        <a href="investor-dashboard.html" class="block w-full bg-green-500 hover:bg-green-600 text-white text-center py-3 rounded-lg transition duration-200">
+                            <i class="fas fa-chart-pie mr-2"></i>
+                            Dashboard Investisseur
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Interface Simple -->
+                <div class="demo-card bg-white rounded-lg shadow-lg overflow-hidden">
+                    <div class="bg-purple-500 text-white p-6">
+                        <i class="fas fa-list text-3xl mb-4"></i>
+                        <h3 class="text-xl font-bold">Interface Simple</h3>
+                    </div>
+                    <div class="p-6">
+                        <p class="text-gray-600 mb-4">
+                            Version simplifiée et épurée pour tester rapidement les fonctionnalités de base du smart contract.
+                        </p>
+                        <ul class="text-sm text-gray-500 mb-6">
+                            <li>✓ Interface minimaliste</li>
+                            <li>✓ Actions essentielles</li>
+                            <li>✓ Diagnostic intégré</li>
+                            <li>✓ Parfait pour les tests</li>
+                        </ul>
+                        <a href="simple.html" class="block w-full bg-purple-500 hover:bg-purple-600 text-white text-center py-3 rounded-lg transition duration-200">
+                            <i class="fas fa-bolt mr-2"></i>
+                            Interface Simple
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Info -->
+    <section class="bg-gray-100 py-16">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-3xl font-bold text-center text-gray-800 mb-8">
+                    Informations Techniques
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-600">
+                            <i class="fas fa-code mr-2"></i>
+                            Smart Contract
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            Contrat déployé sur Sepolia Testnet avec toutes les fonctionnalités RWA.
+                        </p>
+                        <div class="bg-gray-50 p-3 rounded font-mono text-sm">
+                            <strong>Adresse:</strong><br>
+                            <span class="text-blue-600">0x4f8149CfC88d277c6e740Cb3Bb2CFed03281D619</span>
+                        </div>
+                        <a href="https://sepolia.etherscan.io/token/0x4f8149CfC88d277c6e740Cb3Bb2CFed03281D619" 
+                           target="_blank" 
+                           class="inline-block mt-4 text-blue-600 hover:text-blue-800">
+                            <i class="fas fa-external-link-alt mr-1"></i>
+                            Voir sur Etherscan
+                        </a>
+                    </div>
+
+                    <div class="bg-white rounded-lg p-6 shadow">
+                        <h3 class="text-xl font-semibold mb-4 text-green-600">
+                            <i class="fas fa-shield-alt mr-2"></i>
+                            Sécurité & Disclaimer
+                        </h3>
+                        <p class="text-gray-600 mb-4">
+                            Cette démo utilise des propriétés fictives et n'est pas destinée à un usage commercial.
+                        </p>
+                        <ul class="text-sm text-gray-600 space-y-1">
+                            <li>• Testnet Sepolia uniquement</li>
+                            <li>• Propriétés entièrement fictives</li>
+                            <li>• Code open source</li>
+                            <li>• À des fins éducatives</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p class="mb-2">
+                <strong>RWA Demo Platform</strong> - Démonstration de Tokenisation d'Actifs Immobiliers
+            </p>
+            <p class="text-gray-400 text-sm">
+                Projet éducatif • Ethereum Sepolia Testnet • Propriétés fictives
+            </p>
+            <div class="mt-4">
+                <a href="https://github.com" class="text-gray-400 hover:text-white mx-2">
+                    <i class="fab fa-github text-xl"></i>
+                </a>
+                <a href="https://sepolia.etherscan.io" class="text-gray-400 hover:text-white mx-2">
+                    <i class="fas fa-external-link-alt text-xl"></i>
+                </a>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

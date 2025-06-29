@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RWA Token - Interface Simple</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .card {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        .success { background: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .info { background: #d1ecf1; color: #0c5460; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; width: 200px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>🏢 RWA Real Estate Token</h1>
+    
+    <div class="card">
+        <h2>🔌 Connexion</h2>
+        <button id="connectBtn">Connecter MetaMask</button>
+        <div id="connectionStatus"></div>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h3>🏠 Informations Propriété</h3>
+            <div id="propertyInfo">
+                <p>Adresse: <span id="propAddress">-</span></p>
+                <p>Type: <span id="propType">-</span></p>
+                <p>Valeur: <span id="propValue">-</span></p>
+                <p>% Tokenisé: <span id="propPercent">-</span></p>
+                <p>Vérifié: <span id="propVerified">-</span></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>🪙 Informations Token</h3>
+            <div id="tokenInfo">
+                <p>Nom: <span id="tokenName">-</span></p>
+                <p>Symbole: <span id="tokenSymbol">-</span></p>
+                <p>Supply: <span id="tokenSupply">-</span></p>
+                <p>Valeur/Token: <span id="tokenValue">-</span></p>
+                <p>Mon Balance: <span id="myBalance">-</span></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>⚡ Actions Rapides</h3>
+        <button id="loadDataBtn">📊 Charger les données</button>
+        <button id="checkKycBtn">👤 Vérifier mon KYC</button>
+        
+        <div style="margin-top: 20px;">
+            <h4>Qualifier un investisseur:</h4>
+            <input type="text" id="qualifyAddress" placeholder="0x...">
+            <button id="qualifyBtn">Qualifier</button>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Transférer des tokens:</h4>
+            <input type="text" id="transferTo" placeholder="Adresse destinataire">
+            <input type="number" id="transferAmount" placeholder="Montant">
+            <button id="transferBtn">Transférer</button>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <h4>Calcul valeur token:</h4>
+            <button id="calculateValueBtn" style="background: #f39c12; color: white;">🧮 Calculer valeur par token</button>
+            <button id="debugBtn" style="background: #9b59b6; color: white; margin-left: 10px;">🔍 Diagnostic complet</button>
+        </div>
+    </div>
+
+    <div id="messages"></div>
+
+    <script>
+        // On va inclure ethers.js via un CDN différent dans le script
+        const script = document.createElement('script');
+        script.src = 'https://unpkg.com/ethers@5.7.2/dist/ethers.umd.min.js';
+        script.onload = initApp;
+        script.onerror = function() {
+            log('❌ Impossible de charger ethers.js. Vérifiez votre connexion internet.', 'error');
+        };
+        document.head.appendChild(script);
+
+        const CONTRACT_ADDRESS = "0x4f8149CfC88d277c6e740Cb3Bb2CFed03281D619";
+        const ABI = [
+            "function name() view returns (string)",
+            "function symbol() view returns (string)", 
+            "function totalSupply() view returns (uint256)",
+            "function balanceOf(address) view returns (uint256)",
+            "function getTokenValue() view returns (uint256)",
+            "function getPropertyMetadata() view returns (tuple(string propertyAddress, string propertyType, uint256 totalValue, uint256 tokenizedPercentage, string legalDocumentHash, string valuationReportHash, bool isVerified, uint256 lastValuationDate))",
+            "function qualifiedInvestors(address) view returns (bool)",
+            "function qualifyInvestor(address investor)",
+            "function transfer(address to, uint256 amount) returns (bool)"
+        ];
+
+        let provider, signer, contract, userAddress;
+
+        function initApp() {
+            log('✅ Ethers.js chargé avec succès!', 'success');
+            
+            // Event listeners
+            document.getElementById('connectBtn').onclick = connectWallet;
+            document.getElementById('loadDataBtn').onclick = loadData;
+            document.getElementById('checkKycBtn').onclick = checkKyc;
+            document.getElementById('qualifyBtn').onclick = qualifyInvestor;
+            document.getElementById('transferBtn').onclick = transferTokens;
+            document.getElementById('calculateValueBtn').onclick = calculateTokenValue;
+            document.getElementById('debugBtn').onclick = debugContract;
+        }
+
+        async function connectWallet() {
+            try {
+                if (!window.ethereum) {
+                    throw new Error('MetaMask non détecté');
+                }
+
+                await window.ethereum.request({ method: 'eth_requestAccounts' });
+                
+                // Vérifier le réseau
+                const chainId = await window.ethereum.request({ method: 'eth_chainId' });
+                if (chainId !== '0xaa36a7') {
+                    try {
+                        await window.ethereum.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: '0xaa36a7' }],
+                        });
+                    } catch (switchError) {
+                        throw new Error('Veuillez passer sur le réseau Sepolia');
+                    }
+                }
+
+                provider = new ethers.providers.Web3Provider(window.ethereum);
+                signer = provider.getSigner();
+                userAddress = await signer.getAddress();
+                contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+                document.getElementById('connectionStatus').innerHTML = 
+                    `<div class="success">✅ Connecté: ${userAddress}</div>`;
+                
+                log('✅ Connexion réussie!', 'success');
+                
+                // Charger automatiquement les données
+                await loadData();
+
+            } catch (error) {
+                log('❌ Erreur connexion: ' + error.message, 'error');
+            }
+        }
+
+        async function loadData() {
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                log('📊 Chargement des données...', 'info');
+
+                // Données du token et propriété
+                const [name, symbol, totalSupply, tokenValue, balance, property] = await Promise.all([
+                    contract.name(),
+                    contract.symbol(),
+                    contract.totalSupply(),
+                    contract.getTokenValue(),
+                    contract.balanceOf(userAddress),
+                    contract.getPropertyMetadata()
+                ]);
+
+                // Calculer la valeur du token si elle est à 0
+                let tokenValueEth = parseFloat(ethers.utils.formatEther(tokenValue));
+                
+                if (tokenValueEth === 0) {
+                    const propertyValueEth = parseFloat(ethers.utils.formatEther(property.totalValue));
+                    const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                    
+                    if (propertyValueEth > 0 && property.tokenizedPercentage > 0 && totalSupplyNum > 0) {
+                        const tokenizedValue = (propertyValueEth * property.tokenizedPercentage) / 100;
+                        tokenValueEth = tokenizedValue / totalSupplyNum;
+                        log('💡 Valeur calculée automatiquement: €' + tokenValueEth.toFixed(6), 'info');
+                    }
+                }
+
+                // Afficher les données du token
+                document.getElementById('tokenName').textContent = name;
+                document.getElementById('tokenSymbol').textContent = symbol;
+                document.getElementById('tokenSupply').textContent = formatNumber(totalSupply);
+                document.getElementById('tokenValue').textContent = tokenValueEth > 0 ? 
+                    '€' + tokenValueEth.toFixed(6) : formatNumber(tokenValue) + ' EUR';
+                document.getElementById('myBalance').textContent = formatNumber(balance);
+
+                // Afficher les données de la propriété (mode démo)
+                const isDemoMode = true;
+                
+                if (isDemoMode) {
+                    document.getElementById('propAddress').textContent = "456 Rue de la Tokenisation, 75000 DemoVille, France [FICTIF]";
+                    document.getElementById('propType').textContent = "Bureau Commercial - Propriété de Démonstration";
+                } else {
+                    document.getElementById('propAddress').textContent = property.propertyAddress;
+                    document.getElementById('propType').textContent = property.propertyType;
+                }
+                
+                document.getElementById('propValue').textContent = formatNumber(property.totalValue) + ' EUR';
+                document.getElementById('propPercent').textContent = property.tokenizedPercentage + '%';
+                document.getElementById('propVerified').textContent = property.isVerified ? '✅ Oui' : '❌ Non';
+
+                log('✅ Données chargées avec succès!', 'success');
+
+                // Afficher des informations supplémentaires si calculé
+                if (tokenValueEth > 0 && parseFloat(ethers.utils.formatEther(tokenValue)) === 0) {
+                    const balanceNum = parseFloat(ethers.utils.formatEther(balance));
+                    const portfolioValue = balanceNum * tokenValueEth;
+                    log('💼 Valeur de votre portefeuille: €' + portfolioValue.toLocaleString('fr-FR'), 'success');
+                }
+
+            } catch (error) {
+                log('❌ Erreur chargement: ' + error.message, 'error');
+            }
+        }
+
+        async function checkKyc() {
+            if (!contract || !userAddress) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                const isQualified = await contract.qualifiedInvestors(userAddress);
+                log(`👤 Statut KYC: ${isQualified ? '✅ Qualifié' : '❌ Non qualifié'}`, 'info');
+            } catch (error) {
+                log('❌ Erreur KYC: ' + error.message, 'error');
+            }
+        }
+
+        async function qualifyInvestor() {
+            const address = document.getElementById('qualifyAddress').value;
+            
+            if (!address) {
+                log('❌ Entrez une adresse', 'error');
+                return;
+            }
+
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                log('⏳ Qualification en cours...', 'info');
+                const tx = await contract.qualifyInvestor(address);
+                log('⏳ Transaction: ' + tx.hash, 'info');
+                
+                await tx.wait();
+                log('✅ Investisseur qualifié!', 'success');
+                document.getElementById('qualifyAddress').value = '';
+
+            } catch (error) {
+                log('❌ Erreur qualification: ' + error.message, 'error');
+            }
+        }
+
+        async function transferTokens() {
+            const to = document.getElementById('transferTo').value;
+            const amount = document.getElementById('transferAmount').value;
+
+            if (!to || !amount) {
+                log('❌ Remplissez tous les champs', 'error');
+                return;
+            }
+
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                log('⏳ Transfert en cours...', 'info');
+                const tx = await contract.transfer(to, ethers.utils.parseEther(amount));
+                log('⏳ Transaction: ' + tx.hash, 'info');
+                
+                await tx.wait();
+                log('✅ Transfert réussi!', 'success');
+                
+                document.getElementById('transferTo').value = '';
+                document.getElementById('transferAmount').value = '';
+                
+                // Recharger le balance
+                await loadData();
+
+            } catch (error) {
+                log('❌ Erreur transfert: ' + error.message, 'error');
+            }
+        }
+
+        function formatNumber(value) {
+            return parseFloat(ethers.utils.formatEther(value)).toLocaleString('fr-FR', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+            });
+        }
+
+        async function calculateTokenValue() {
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                log('🧮 Calcul de la valeur du token...', 'info');
+
+                const [property, totalSupply] = await Promise.all([
+                    contract.getPropertyMetadata(),
+                    contract.totalSupply()
+                ]);
+
+                const propertyValueEur = parseFloat(ethers.utils.formatEther(property.totalValue));
+                const totalSupplyNum = parseFloat(ethers.utils.formatEther(totalSupply));
+                const tokenizedPercentage = property.tokenizedPercentage;
+                
+                if (propertyValueEur > 0 && totalSupplyNum > 0 && tokenizedPercentage > 0) {
+                    const tokenizedValue = (propertyValueEur * tokenizedPercentage) / 100;
+                    const calculatedTokenValue = tokenizedValue / totalSupplyNum;
+                    
+                    // Mettre à jour l'affichage
+                    document.getElementById('tokenValue').textContent = '€' + calculatedTokenValue.toFixed(6);
+                    
+                    log(`✅ Valeur calculée: €${calculatedTokenValue.toFixed(6)} par token`, 'success');
+                    log(`🏢 Basé sur: Propriété €${propertyValueEur.toLocaleString('fr-FR')} (${tokenizedPercentage}% tokenisé)`, 'info');
+                    
+                    // Calculer la valeur du portefeuille
+                    const balance = await contract.balanceOf(userAddress);
+                    const balanceNum = parseFloat(ethers.utils.formatEther(balance));
+                    const portfolioValue = balanceNum * calculatedTokenValue;
+                    log(`💼 Votre portefeuille: ${balanceNum.toLocaleString('fr-FR')} tokens = €${portfolioValue.toLocaleString('fr-FR')}`, 'success');
+                    
+                } else {
+                    log('❌ Impossible de calculer: données insuffisantes', 'error');
+                    if (propertyValueEur <= 0) log('- Valeur de propriété: ' + propertyValueEur, 'error');
+                    if (tokenizedPercentage <= 0) log('- % tokenisé: ' + tokenizedPercentage, 'error');
+                    if (totalSupplyNum <= 0) log('- Supply total: ' + totalSupplyNum, 'error');
+                }
+
+            } catch (error) {
+                log('❌ Erreur calcul: ' + error.message, 'error');
+            }
+        }
+
+        async function debugContract() {
+            if (!contract) {
+                log('❌ Connectez-vous d\'abord', 'error');
+                return;
+            }
+
+            try {
+                log('🔍 Diagnostic du contrat...', 'info');
+
+                const [name, symbol, totalSupply, tokenValue, balance, property, isQualified] = await Promise.all([
+                    contract.name(),
+                    contract.symbol(),
+                    contract.totalSupply(),
+                    contract.getTokenValue(),
+                    contract.balanceOf(userAddress),
+                    contract.getPropertyMetadata(),
+                    contract.qualifiedInvestors(userAddress)
+                ]);
+
+                console.log('🔍 DIAGNOSTIC SIMPLE.HTML:');
+                console.log('========================');
+                console.log('Token:', name, '(' + symbol + ')');
+                console.log('Supply total:', ethers.utils.formatEther(totalSupply));
+                console.log('Valeur token (contrat):', ethers.utils.formatEther(tokenValue));
+                console.log('Votre balance:', ethers.utils.formatEther(balance));
+                console.log('Propriété:', property.propertyAddress);
+                console.log('Type:', property.propertyType);
+                console.log('Valeur propriété:', ethers.utils.formatEther(property.totalValue));
+                console.log('% tokenisé:', property.tokenizedPercentage);
+                console.log('KYC:', isQualified);
+
+                log(`📊 ${name} (${symbol}) - Supply: ${ethers.utils.formatEther(totalSupply)}`, 'info');
+                log(`🏢 ${property.propertyAddress} (${property.propertyType})`, 'info');
+                log(`💰 Valeur: €${ethers.utils.formatEther(property.totalValue)} (${property.tokenizedPercentage}% tokenisé)`, 'info');
+                log(`💼 Balance: ${ethers.utils.formatEther(balance)} tokens`, 'info');
+                log(`🎫 KYC: ${isQualified ? 'Qualifié ✅' : 'Non qualifié ❌'}`, isQualified ? 'success' : 'error');
+
+            } catch (error) {
+                log('❌ Erreur diagnostic: ' + error.message, 'error');
+            }
+        }
+
+        function log(message, type) {
+            const container = document.getElementById('messages');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            container.appendChild(div);
+            console.log(message);
+        }
+    </script>
+</body>
+</html>
