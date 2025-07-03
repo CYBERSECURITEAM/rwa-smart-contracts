@@ -118,7 +118,7 @@ function getPropertyInfo() external view returns (PropertyInfo)
 
 ## 🌐 Démo Live
 
-**URL**: [https://beamish-frangollo-d88cee.netlify.app](https://beamish-frangollo-d88cee.netlify.app)
+**URL**: [https://rwa-demo-plateform.netlify.app](https://rwa-demo-plateform.netlify.app)
 
 La démo utilise des propriétés fictives et est configurée pour Sepolia Testnet.
 
