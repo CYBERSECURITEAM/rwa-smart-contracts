@@ -207,8 +207,8 @@ Ce projet est sous licence MIT. Voir le fichier [LICENSE](LICENSE) pour plus de 
 
 ## 📞 Contact
 
-- **GitHub**: [Votre profil](https://github.com/votre-username)
-- **Demo**: [RWA Platform](https://beamish-frangollo-d88cee.netlify.app)
+- **GitHub**: [Votre profil](https://github.com/cybersecuriteam)
+- **Demo**: [RWA Platform](https://rwa-demo-plateform.netlify.app/)
 - **Contract**: [Etherscan](https://sepolia.etherscan.io/token/0x4f8149CfC88d277c6e740Cb3Bb2CFed03281D619)
 
 ---
